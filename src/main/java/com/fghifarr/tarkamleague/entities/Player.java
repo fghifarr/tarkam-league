@@ -19,17 +19,25 @@ public class Player extends BaseEntity {
     @ManyToOne @JoinColumn(name = "club_id")
     private Club club;
 
-    Player(String name) {
+    public Player(String name) {
         this.name = name;
     }
 
-    Player(Long id, String name) {
+    public Player(Long id, String name) {
         this(name);
         this.setId(id);
     }
 
-    Player(Long id, String name, Club club) {
+    public Player(Long id, String name, Club club) {
         this(id, name);
         this.setClub(club);
+    }
+
+    public String getClubName() {
+        if (this.club == null) {
+            return "Free Agent";
+        }
+
+        return this.club.getName();
     }
 }
