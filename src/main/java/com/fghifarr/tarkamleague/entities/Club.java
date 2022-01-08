@@ -12,16 +12,13 @@ import javax.validation.constraints.NotBlank;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Club extends BaseEntity {
     @NotBlank(message = "Name cannot be blank")
     private String name;
 
-    public Club(String name) {
-        this.name = name;
-    }
-
     public Club(Long id, String name) {
+        this(name);
         this.setId(id);
-        this.name = name;
     }
 }

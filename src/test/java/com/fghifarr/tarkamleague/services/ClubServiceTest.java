@@ -52,6 +52,7 @@ public class ClubServiceTest {
         List<ClubResp> clubRespList = clubList.stream()
                 .map(ClubResp::new)
                 .collect(Collectors.toList());
+
         return new PageImpl<>(clubRespList);
     }
 

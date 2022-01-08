@@ -88,7 +88,6 @@ public class ClubManagementServiceTest {
     @Test
     public void delete_notFound() {
         Club club = new Club(1L, "Liverpool");
-        String newClubName = club.getName() + " updated";
 
         when(clubRepository.findById(any(Long.class))).thenReturn(Optional.empty());
         ClubResp clubResp = clubManagementService.delete(club.getId());

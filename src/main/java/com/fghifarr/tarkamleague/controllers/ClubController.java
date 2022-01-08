@@ -50,7 +50,7 @@ public class ClubController extends BaseController {
         ClubResp club = clubService.get(id);
         if (club == null)
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "There is no club with with id: " + id);
+                    "There is no club with id: " + id);
 
         return club;
     }
@@ -70,7 +70,7 @@ public class ClubController extends BaseController {
         ClubResp updatedClub = clubManagementService.update(id, clubReq);
         if (updatedClub == null)
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "There is no club with with id: " + id);
+                    "There is no club with id: " + id);
 
         return "Successfully updated club: " + updatedClub.getName();
     }
@@ -81,7 +81,7 @@ public class ClubController extends BaseController {
         ClubResp deletedClub = clubManagementService.delete(id);
         if (deletedClub == null)
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "There is no club with with id: " + id);
+                    "There is no club with id: " + id);
 
         return "Successfully deleted club: " + deletedClub.getName();
     }

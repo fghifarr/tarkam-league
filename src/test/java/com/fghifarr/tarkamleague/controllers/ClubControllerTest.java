@@ -142,7 +142,7 @@ public class ClubControllerTest {
     @Test
     public void get_notFound() throws Exception {
         long id = 1L;
-        String reason = "There is no club with with id: " + id;
+        String reason = "There is no club with id: " + id;
         String msg = HttpStatus.NOT_FOUND + " \"" + reason + "\"";
 
         when(clubService.get(any(Long.class))).thenReturn(null);
@@ -202,7 +202,7 @@ public class ClubControllerTest {
     public void update_notFound() throws Exception {
         Club club = new Club(1L, "Liverpool");
         ClubReq clubReq = new ClubReq(club.getName());
-        String reason = "There is no club with with id: " + club.getId();
+        String reason = "There is no club with id: " + club.getId();
         String expectedMsg = HttpStatus.NOT_FOUND + " \"" + reason + "\"";
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/clubs/" + club.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -239,7 +239,7 @@ public class ClubControllerTest {
     @Test
     public void delete_notFound() throws Exception {
         Club club = new Club(1L, "Liverpool");
-        String reason = "There is no club with with id: " + club.getId();
+        String reason = "There is no club with id: " + club.getId();
         String expectedMsg = HttpStatus.NOT_FOUND + " \"" + reason + "\"";
 
         when(clubManagementService.delete(any(Long.class))).thenReturn(null);
