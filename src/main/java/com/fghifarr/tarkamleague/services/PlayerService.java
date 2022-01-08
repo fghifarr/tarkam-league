@@ -1,6 +1,9 @@
 package com.fghifarr.tarkamleague.services;
 
+import com.fghifarr.tarkamleague.models.requests.PlayerListingCriteria;
+import com.fghifarr.tarkamleague.models.responses.PlayerResp;
 import com.fghifarr.tarkamleague.repositories.PlayerRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +17,11 @@ public class PlayerService {
         this.playerRepository = playerRepository;
     }
 
-    public String test() {
-        return "Test";
+    public Page<PlayerResp> list(PlayerListingCriteria criteria) {
+        return playerRepository.findAllRespWithQueries(criteria.getQuery(), criteria.getClub(), criteria);
+    }
+
+    public PlayerResp get(Long id) {
+        return playerRepository.findRespById(id);
     }
 }
