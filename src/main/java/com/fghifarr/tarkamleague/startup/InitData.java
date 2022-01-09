@@ -1,13 +1,7 @@
 package com.fghifarr.tarkamleague.startup;
 
-import com.fghifarr.tarkamleague.entities.Club;
-import com.fghifarr.tarkamleague.entities.Player;
-import com.fghifarr.tarkamleague.entities.Role;
-import com.fghifarr.tarkamleague.entities.User;
-import com.fghifarr.tarkamleague.repositories.ClubRepository;
-import com.fghifarr.tarkamleague.repositories.PlayerRepository;
-import com.fghifarr.tarkamleague.repositories.RoleRepository;
-import com.fghifarr.tarkamleague.repositories.UserRepository;
+import com.fghifarr.tarkamleague.entities.*;
+import com.fghifarr.tarkamleague.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -15,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 public class InitData {
@@ -24,36 +19,56 @@ public class InitData {
     CommandLineRunner initRole(RoleRepository roleRepository) {
         return args -> {
             List<Role> roleList = List.of(
-                    new Role("Admin"),
+                    new Role("Administrator"),
                     new Role("Creator"),
                     new Role("Editor"),
-                    new Role("Reviewer")
+                    new Role("Viewer")
             );
 
             for (Role role : roleList) {
-                log.info("Preloading Role: " + roleRepository.save(role).getName());
+                log.info("Preloading Role: " + roleRepository.saveAndFlush(role).getName());
             }
         };
     }
 
     @Bean
-    CommandLineRunner initUser(RoleRepository roleRepository, UserRepository userRepository) {
+    CommandLineRunner initRoleGroup(RoleRepository roleRepository, RoleGroupRepository roleGroupRepository) {
         return args -> {
-            Role admin = roleRepository.findByName("Admin");
+            Role administrator = roleRepository.findByName("Administrator");
             Role creator = roleRepository.findByName("Creator");
             Role editor = roleRepository.findByName("Editor");
-            Role reviewer = roleRepository.findByName("Reviewer");
+            Role viewer = roleRepository.findByName("Viewer");
+
+            List<RoleGroup> roleGroupList = List.of(
+                    new RoleGroup("Admin", Set.of(administrator)),
+                    new RoleGroup("Data Entry", Set.of(creator, editor, viewer)),
+                    new RoleGroup("Visitor", Set.of(viewer))
+            );
+
+            for (RoleGroup roleGroup : roleGroupList) {
+                log.info("Preloading Role Group: " + roleGroupRepository.saveAndFlush(roleGroup).getName());
+            }
+        };
+    }
+
+    @Bean
+    CommandLineRunner initUser(RoleGroupRepository roleGroupRepository, UserRepository userRepository) {
+        return args -> {
+            RoleGroup admin = roleGroupRepository.findByName("Admin");
+            RoleGroup dataEntry = roleGroupRepository.findByName("Data Entry");
+            RoleGroup visitor = roleGroupRepository.findByName("Visitor");
 
             List<User> userList = List.of(
                     new User("admin1", "admin1Pass", admin),
                     new User("admin2", "admin2Pass", admin),
-                    new User("creator1", "creator1Pass", creator),
-                    new User("editor1", "editor1Pass", editor),
-                    new User("reviewer1", "reviewer1Pass", reviewer)
+                    new User("dataEntry1", "dataEntry1Pass", dataEntry),
+                    new User("dataEntry2", "dataEntry1Pass", dataEntry),
+                    new User("visitor1", "visitor1Pass", visitor),
+                    new User("visitor2", "visitor2Pass", visitor)
             );
 
             for (User user : userList) {
-                log.info("Preloading User: " + userRepository.save(user).getUsername());
+                log.info("Preloading User: " + userRepository.saveAndFlush(user).getUsername());
             }
         };
     }

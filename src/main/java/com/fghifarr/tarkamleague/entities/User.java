@@ -22,11 +22,11 @@ public class User extends BaseEntity {
     private String password;
 
     @ManyToOne
-    @NotNull(message = "Role cannot be null!")
-    private Role role;
+    @NotNull(message = "Role group cannot be null!")
+    private RoleGroup roleGroup;
 
-    public User(Long id, String username, String password, Role role) {
-        this(username, password, role);
+    public User(Long id, String username, String password, RoleGroup roleGroup) {
+        this(username, password, roleGroup);
         this.setId(id);
     }
 }

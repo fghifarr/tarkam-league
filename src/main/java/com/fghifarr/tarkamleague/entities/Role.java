@@ -12,10 +12,13 @@ import javax.validation.constraints.NotBlank;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Role extends BaseEntity {
     @NotBlank(message = "Name cannot be blank!")
     private String name;
+
+    public Role(String name) {
+        this.name = name;
+    }
 
     public Role(Long id, String name) {
         this(name);
