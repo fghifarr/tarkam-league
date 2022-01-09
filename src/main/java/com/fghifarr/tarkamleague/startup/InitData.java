@@ -2,8 +2,12 @@ package com.fghifarr.tarkamleague.startup;
 
 import com.fghifarr.tarkamleague.entities.Club;
 import com.fghifarr.tarkamleague.entities.Player;
+import com.fghifarr.tarkamleague.entities.Role;
+import com.fghifarr.tarkamleague.entities.User;
 import com.fghifarr.tarkamleague.repositories.ClubRepository;
 import com.fghifarr.tarkamleague.repositories.PlayerRepository;
+import com.fghifarr.tarkamleague.repositories.RoleRepository;
+import com.fghifarr.tarkamleague.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -15,6 +19,44 @@ import java.util.List;
 @Configuration
 public class InitData {
     private static final Logger log = LoggerFactory.getLogger(InitData.class);
+
+    @Bean
+    CommandLineRunner initRole(RoleRepository roleRepository) {
+        return args -> {
+            List<Role> roleList = List.of(
+                    new Role("Admin"),
+                    new Role("Creator"),
+                    new Role("Editor"),
+                    new Role("Reviewer")
+            );
+
+            for (Role role : roleList) {
+                log.info("Preloading Role: " + roleRepository.save(role).getName());
+            }
+        };
+    }
+
+    @Bean
+    CommandLineRunner initUser(RoleRepository roleRepository, UserRepository userRepository) {
+        return args -> {
+            Role admin = roleRepository.findByName("Admin");
+            Role creator = roleRepository.findByName("Creator");
+            Role editor = roleRepository.findByName("Editor");
+            Role reviewer = roleRepository.findByName("Reviewer");
+
+            List<User> userList = List.of(
+                    new User("admin1", "admin1Pass", admin),
+                    new User("admin2", "admin2Pass", admin),
+                    new User("creator1", "creator1Pass", creator),
+                    new User("editor1", "editor1Pass", editor),
+                    new User("reviewer1", "reviewer1Pass", reviewer)
+            );
+
+            for (User user : userList) {
+                log.info("Preloading User: " + userRepository.save(user).getUsername());
+            }
+        };
+    }
 
     @Bean
     CommandLineRunner initClub(ClubRepository clubRepository) {
