@@ -1,5 +1,7 @@
 package com.fghifarr.tarkamleague.configs;
 
+import com.fghifarr.tarkamleague.configs.constants.RoleConstant;
+import com.fghifarr.tarkamleague.configs.constants.RoleGroupConstant;
 import com.fghifarr.tarkamleague.entities.*;
 import com.fghifarr.tarkamleague.repositories.*;
 import org.slf4j.Logger;
@@ -19,10 +21,10 @@ public class InitData {
     CommandLineRunner initRole(RoleRepository roleRepository) {
         return args -> {
             List<Role> roleList = List.of(
-                    new Role("Administrator"),
-                    new Role("Creator"),
-                    new Role("Editor"),
-                    new Role("Viewer")
+                    new Role(RoleConstant.ADMINISTRATOR),
+                    new Role(RoleConstant.CREATOR),
+                    new Role(RoleConstant.EDITOR),
+                    new Role(RoleConstant.VIEWER)
             );
 
             for (Role role : roleList) {
@@ -34,15 +36,15 @@ public class InitData {
     @Bean
     CommandLineRunner initRoleGroup(RoleRepository roleRepository, RoleGroupRepository roleGroupRepository) {
         return args -> {
-            Role administrator = roleRepository.findByName("Administrator");
-            Role creator = roleRepository.findByName("Creator");
-            Role editor = roleRepository.findByName("Editor");
-            Role viewer = roleRepository.findByName("Viewer");
+            Role administrator = roleRepository.findByName(RoleConstant.ADMINISTRATOR);
+            Role creator = roleRepository.findByName(RoleConstant.CREATOR);
+            Role editor = roleRepository.findByName(RoleConstant.EDITOR);
+            Role viewer = roleRepository.findByName(RoleConstant.VIEWER);
 
             List<RoleGroup> roleGroupList = List.of(
-                    new RoleGroup("Admin", Set.of(administrator)),
-                    new RoleGroup("Data Entry", Set.of(creator, editor, viewer)),
-                    new RoleGroup("Visitor", Set.of(viewer))
+                    new RoleGroup(RoleGroupConstant.ADMIN, Set.of(administrator)),
+                    new RoleGroup(RoleGroupConstant.DATA_ENTRY, Set.of(creator, editor, viewer)),
+                    new RoleGroup(RoleGroupConstant.VISITOR, Set.of(viewer))
             );
 
             for (RoleGroup roleGroup : roleGroupList) {
@@ -54,9 +56,9 @@ public class InitData {
     @Bean
     CommandLineRunner initUser(RoleGroupRepository roleGroupRepository, UserRepository userRepository) {
         return args -> {
-            RoleGroup admin = roleGroupRepository.findByName("Admin");
-            RoleGroup dataEntry = roleGroupRepository.findByName("Data Entry");
-            RoleGroup visitor = roleGroupRepository.findByName("Visitor");
+            RoleGroup admin = roleGroupRepository.findByName(RoleGroupConstant.ADMIN);
+            RoleGroup dataEntry = roleGroupRepository.findByName(RoleGroupConstant.DATA_ENTRY);
+            RoleGroup visitor = roleGroupRepository.findByName(RoleGroupConstant.VISITOR);
 
             List<User> userList = List.of(
                     new User("admin1", "admin1Pass", admin),
