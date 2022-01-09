@@ -24,7 +24,9 @@ public class PlayerManagementService {
     }
 
     public PlayerResp create(PlayerReq playerReq) {
-        Club club = clubRepository.findById(playerReq.getClub()).orElse(null);
+        Club club = null;
+        if (playerReq.getClub() != null)
+            club = clubRepository.findById(playerReq.getClub()).orElse(null);
 
         Player player = Player.builder()
                 .name(playerReq.getName())
@@ -38,7 +40,9 @@ public class PlayerManagementService {
     public PlayerResp update(Long id, PlayerReq playerReq) {
         Optional<Player> playerOpt = playerRepository.findById(id);
         if (playerOpt.isEmpty()) return null;
-        Club club = clubRepository.findById(playerReq.getClub()).orElse(null);
+        Club club = null;
+        if (playerReq.getClub() != null)
+            club = clubRepository.findById(playerReq.getClub()).orElse(null);
 
         Player player = playerOpt.get();
         player.setName(playerReq.getName());

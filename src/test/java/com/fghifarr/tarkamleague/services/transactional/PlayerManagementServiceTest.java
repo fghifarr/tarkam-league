@@ -50,6 +50,19 @@ public class PlayerManagementServiceTest {
         assertThat(playerResp.getClub()).isEqualTo(player.getClub().getName());
     }
 
+    @Test
+    public void create_withNullClub_success() {
+        Player player = new Player(2L, "Steven Gerrard");
+        PlayerReq playerReq = new PlayerReq(player.getName());
+
+        when(playerRepository.save(any(Player.class))).thenReturn(player);
+        PlayerResp playerResp = playerManagementService.create(playerReq);
+
+        assertThat(playerResp).isExactlyInstanceOf(PlayerResp.class);
+        assertThat(playerResp.getName()).isEqualTo(player.getName());
+        assertThat(playerResp.getClub()).isEqualTo("Free Agent");
+    }
+
     //============
     //---UPDATE---
     //============
@@ -67,6 +80,20 @@ public class PlayerManagementServiceTest {
 
         assertThat(playerRes).isExactlyInstanceOf(PlayerResp.class);
         assertThat(playerRes.getName()).isEqualTo(newPlayerName);
+    }
+
+    @Test
+    public void update_withNullClub_success() {
+        Player player = new Player(2L, "Steven Gerrard");
+        PlayerReq playerReq = new PlayerReq(player.getName());
+
+        when(playerRepository.findById(any(Long.class))).thenReturn(Optional.of(player));
+        when(playerRepository.save(any(Player.class))).thenReturn(player);
+        PlayerResp playerResp = playerManagementService.update(player.getId(), playerReq);
+
+        assertThat(playerResp).isExactlyInstanceOf(PlayerResp.class);
+        assertThat(playerResp.getName()).isEqualTo(player.getName());
+        assertThat(playerResp.getClub()).isEqualTo("Free Agent");
     }
 
     @Test

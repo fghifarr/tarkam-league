@@ -15,4 +15,8 @@ public class PlayerReq {
     @NotBlank(message = "Name cannot be blank!")
     private String name;
     private Long club;
+
+    public PlayerReq(String name) {
+        this.name = name;
+    }
 }
