@@ -1,9 +1,9 @@
 package com.fghifarr.tarkamleague.startup;
 
-import com.fghifarr.tarkamleague.models.requests.ClubReq;
-import com.fghifarr.tarkamleague.models.requests.PlayerReq;
-import com.fghifarr.tarkamleague.services.ClubManagementService;
-import com.fghifarr.tarkamleague.services.transactional.PlayerManagementService;
+import com.fghifarr.tarkamleague.entities.Club;
+import com.fghifarr.tarkamleague.entities.Player;
+import com.fghifarr.tarkamleague.repositories.ClubRepository;
+import com.fghifarr.tarkamleague.repositories.PlayerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -17,38 +17,42 @@ public class InitData {
     private static final Logger log = LoggerFactory.getLogger(InitData.class);
 
     @Bean
-    CommandLineRunner initClub(ClubManagementService clubManagementService) {
-        List<ClubReq> clubList = List.of(
-                new ClubReq("Liverpool"),
-                new ClubReq("Manchester City"),
-                new ClubReq("Manchester United"),
-                new ClubReq("Newcastle United"),
-                new ClubReq("West Ham United"),
-                new ClubReq("Leicester City")
-        );
-
+    CommandLineRunner initClub(ClubRepository clubRepository) {
         return args -> {
-            for (ClubReq club : clubList) {
-                log.info("Preloading Club: " + clubManagementService.create(club).getName());
+            List<Club> clubList = List.of(
+                    new Club("Liverpool"),
+                    new Club("Manchester City"),
+                    new Club("Manchester United"),
+                    new Club("Newcastle United"),
+                    new Club("West Ham United"),
+                    new Club("Leicester City")
+            );
+
+            for (Club club : clubList) {
+                log.info("Preloading Club: " + clubRepository.saveAndFlush(club).getName());
             }
         };
     }
 
     @Bean
-    CommandLineRunner initPlayer(PlayerManagementService playerManagementService) {
-        List<PlayerReq> playerList = List.of(
-                new PlayerReq("Steven Gerrard"),
-                new PlayerReq("Wayne Rooney"),
-                new PlayerReq("Mohammed Salah", 1L),
-                new PlayerReq("Trent Alexander-Arnold", 1L),
-                new PlayerReq("Andrew Robertson", 1L),
-                new PlayerReq("David De Gea", 3L),
-                new PlayerReq("Kevin De Bruyne", 2L)
-        );
-
+    CommandLineRunner initPlayer(PlayerRepository playerRepository, ClubRepository clubRepository) {
         return args -> {
-            for (PlayerReq player : playerList) {
-                log.info("Preloading Player: " + playerManagementService.create(player).getName());
+            Club liverpool = clubRepository.findByName("Liverpool");
+            Club manUtd = clubRepository.findByName("Manchester United");
+            Club manCity = clubRepository.findByName("Manchester City");
+
+            List<Player> playerList = List.of(
+                    new Player("Steven Gerrard"),
+                    new Player("Wayne Rooney"),
+                    new Player("Mohammed Salah", liverpool),
+                    new Player("Trent Alexander-Arnold", liverpool),
+                    new Player("Andrew Robertson", liverpool),
+                    new Player("David De Gea", manUtd),
+                    new Player("Kevin De Bruyne", manCity)
+            );
+
+            for (Player player : playerList) {
+                log.info("Preloading Player: " + playerRepository.saveAndFlush(player).getName());
             }
         };
     }

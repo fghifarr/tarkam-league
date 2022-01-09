@@ -23,4 +23,6 @@ public interface ClubRepository extends JpaRepository<Club, Long> {
             "new com.fghifarr.tarkamleague.models.responses.ClubResp(c.id, c.name) " +
             "FROM Club c WHERE c.id = ?1")
     ClubResp findRespById(Long id);
+
+    Club findByName(String name);
 }
