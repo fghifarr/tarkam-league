@@ -1,4 +1,4 @@
-package com.fghifarr.tarkamleague.startup;
+package com.fghifarr.tarkamleague.configs;
 
 import com.fghifarr.tarkamleague.entities.*;
 import com.fghifarr.tarkamleague.repositories.*;
