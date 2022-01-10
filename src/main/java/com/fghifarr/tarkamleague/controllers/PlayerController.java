@@ -8,6 +8,7 @@ import com.fghifarr.tarkamleague.services.transactional.PlayerManagementService;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +56,7 @@ public class PlayerController extends BaseController {
         return player;
     }
 
+    @PreAuthorize("hasAnyRole('Administrator', 'Creator')")
     @PostMapping("")
     public @ResponseBody
     String  create(@Valid @RequestBody PlayerReq playerReq) {
@@ -63,6 +65,7 @@ public class PlayerController extends BaseController {
         return "Successfully created a new player: " + newPlayer.getName();
     }
 
+    @PreAuthorize("hasAnyRole('Administrator', 'Editor')")
     @PutMapping("/{id}")
     public @ResponseBody
     String update(@PathVariable Long id, @Valid @RequestBody PlayerReq playerReq) {
@@ -74,6 +77,7 @@ public class PlayerController extends BaseController {
         return "Successfully updated a player: " + updatedPlayer.getName();
     }
 
+    @PreAuthorize("hasRole('Administrator')")
     @DeleteMapping("/{id}")
     public @ResponseBody
     String delete(@PathVariable Long id) {

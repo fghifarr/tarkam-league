@@ -8,6 +8,7 @@ import com.fghifarr.tarkamleague.services.ClubService;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +56,7 @@ public class ClubController extends BaseController {
         return club;
     }
 
+    @PreAuthorize("hasAnyRole('Administrator', 'Creator')")
     @PostMapping("")
     public @ResponseBody
     String create(@Valid @RequestBody ClubReq clubReq) {
@@ -63,6 +65,7 @@ public class ClubController extends BaseController {
         return "Successfully added new club: " + newClub.getName();
     }
 
+    @PreAuthorize("hasAnyRole('Administrator', 'Editor')")
     @PutMapping("/{id}")
     public @ResponseBody
     String update(@PathVariable Long id,
@@ -75,6 +78,7 @@ public class ClubController extends BaseController {
         return "Successfully updated club: " + updatedClub.getName();
     }
 
+    @PreAuthorize("hasRole('Administrator')")
     @DeleteMapping("/{id}")
     public @ResponseBody
     String delete(@PathVariable Long id) {
