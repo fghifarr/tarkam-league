@@ -6,20 +6,29 @@ import com.fghifarr.tarkamleague.entities.*;
 import com.fghifarr.tarkamleague.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Configuration
 public class InitData {
     private static final Logger log = LoggerFactory.getLogger(InitData.class);
 
+    @Value("${spring.jpa.hibernate.ddl-auto}")
+    String ddlAuto;
+
     @Bean
     CommandLineRunner initRole(RoleRepository roleRepository) {
         return args -> {
+            if (!Objects.equals(ddlAuto, "create-drop"))
+                return;
+
             List<Role> roleList = List.of(
                     new Role(RoleConstant.ADMINISTRATOR),
                     new Role(RoleConstant.CREATOR),
@@ -36,6 +45,9 @@ public class InitData {
     @Bean
     CommandLineRunner initRoleGroup(RoleRepository roleRepository, RoleGroupRepository roleGroupRepository) {
         return args -> {
+            if (!Objects.equals(ddlAuto, "create-drop"))
+                return;
+
             Role administrator = roleRepository.findByName(RoleConstant.ADMINISTRATOR);
             Role creator = roleRepository.findByName(RoleConstant.CREATOR);
             Role editor = roleRepository.findByName(RoleConstant.EDITOR);
@@ -54,19 +66,23 @@ public class InitData {
     }
 
     @Bean
-    CommandLineRunner initUser(RoleGroupRepository roleGroupRepository, UserRepository userRepository) {
+    CommandLineRunner initUser(RoleGroupRepository roleGroupRepository,
+                               UserRepository userRepository, PasswordEncoder encoder) {
         return args -> {
+            if (!Objects.equals(ddlAuto, "create-drop"))
+                return;
+
             RoleGroup admin = roleGroupRepository.findByName(RoleGroupConstant.ADMIN);
             RoleGroup dataEntry = roleGroupRepository.findByName(RoleGroupConstant.DATA_ENTRY);
             RoleGroup visitor = roleGroupRepository.findByName(RoleGroupConstant.VISITOR);
 
             List<User> userList = List.of(
-                    new User("admin1", "admin1Pass", admin),
-                    new User("admin2", "admin2Pass", admin),
-                    new User("dataEntry1", "dataEntry1Pass", dataEntry),
-                    new User("dataEntry2", "dataEntry1Pass", dataEntry),
-                    new User("visitor1", "visitor1Pass", visitor),
-                    new User("visitor2", "visitor2Pass", visitor)
+                    new User("admin1", encoder.encode("admin1Pass"), admin),
+                    new User("admin2", encoder.encode("admin2Pass"), admin),
+                    new User("dataEntry1", encoder.encode("dataEntry1Pass"), dataEntry),
+                    new User("dataEntry2", encoder.encode("dataEntry1Pass"), dataEntry),
+                    new User("visitor1", encoder.encode("visitor1Pass"), visitor),
+                    new User("visitor2", encoder.encode("visitor2Pass"), visitor)
             );
 
             for (User user : userList) {
@@ -78,6 +94,9 @@ public class InitData {
     @Bean
     CommandLineRunner initClub(ClubRepository clubRepository) {
         return args -> {
+            if (!Objects.equals(ddlAuto, "create-drop"))
+                return;
+
             List<Club> clubList = List.of(
                     new Club("Liverpool"),
                     new Club("Manchester City"),
@@ -96,6 +115,9 @@ public class InitData {
     @Bean
     CommandLineRunner initPlayer(PlayerRepository playerRepository, ClubRepository clubRepository) {
         return args -> {
+            if (!Objects.equals(ddlAuto, "create-drop"))
+                return;
+
             Club liverpool = clubRepository.findByName("Liverpool");
             Club manUtd = clubRepository.findByName("Manchester United");
             Club manCity = clubRepository.findByName("Manchester City");
