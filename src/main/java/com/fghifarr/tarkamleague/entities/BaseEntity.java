@@ -3,9 +3,7 @@ package com.fghifarr.tarkamleague.entities;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 import java.util.Date;
 
 @MappedSuperclass
@@ -13,7 +11,7 @@ import java.util.Date;
 @Setter
 public class BaseEntity {
 
-    private static final long serialVersionUID = 1;
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue
@@ -21,4 +19,11 @@ public class BaseEntity {
 
     private Date lastUpdated = new Date();
     private Date dateCreated = new Date();
+
+    @ManyToOne
+    @JoinColumn(name = "created_by_id")
+    private User createdBy;
+    @ManyToOne
+    @JoinColumn(name = "modified_by_id")
+    private User modifiedBy;
 }

@@ -14,7 +14,13 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoleGroup extends BaseEntity {
+public class RoleGroup {
+
+    private static final long serialVersionUID = 1L;
+
+    @Id @GeneratedValue
+    private Long id;
+
     private String name;
 
     @ManyToMany
@@ -24,4 +30,9 @@ public class RoleGroup extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
+
+    public RoleGroup(String name, Set<Role> roles) {
+        this.name = name;
+        this.roles = roles;
+    }
 }

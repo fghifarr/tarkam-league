@@ -2,11 +2,10 @@ package com.fghifarr.tarkamleague.entities;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.Date;
 
 @Entity
 @Table(name = "user")
@@ -15,18 +14,28 @@ import javax.validation.constraints.NotNull;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User extends BaseEntity {
+public class User {
+
+    private static final long serialVersionUID = 1L;
+
+    @Id @GeneratedValue
+    private Long id;
+
     @NotBlank(message = "Name cannot be blank!")
     private String username;
     @NotBlank(message = "Password cannot be blank!")
     private String password;
 
-    @ManyToOne
+    @ManyToOne @JoinColumn(name = "role_group_id")
     @NotNull(message = "Role group cannot be null!")
     private RoleGroup roleGroup;
 
-    public User(Long id, String username, String password, RoleGroup roleGroup) {
-        this(username, password, roleGroup);
-        this.setId(id);
+    private Date dateCreated = new Date();
+    private Date lastUpdated = new Date();
+
+    public User(String username, String password, RoleGroup roleGroup) {
+        this.username = username;
+        this.password = password;
+        this.roleGroup = roleGroup;
     }
 }

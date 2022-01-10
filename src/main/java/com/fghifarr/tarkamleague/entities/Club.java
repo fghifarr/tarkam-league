@@ -14,6 +14,9 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Club extends BaseEntity {
+
+    private static final long serialVersionUID = 1L;
+
     @NotBlank(message = "Name cannot be blank")
     private String name;
 

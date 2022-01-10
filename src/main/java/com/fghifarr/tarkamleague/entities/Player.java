@@ -13,6 +13,9 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Player extends BaseEntity {
+
+    private static final long serialVersionUID = 1L;
+
     @NotBlank(message = "Name cannot be null!")
     private String name;
 
