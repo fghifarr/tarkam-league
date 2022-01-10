@@ -5,7 +5,7 @@ import com.fghifarr.tarkamleague.entities.Club;
 import com.fghifarr.tarkamleague.models.requests.ClubListingCriteria;
 import com.fghifarr.tarkamleague.models.requests.ClubReq;
 import com.fghifarr.tarkamleague.models.responses.ClubResp;
-import com.fghifarr.tarkamleague.services.ClubManagementService;
+import com.fghifarr.tarkamleague.services.transactional.ClubManagementService;
 import com.fghifarr.tarkamleague.services.ClubService;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;

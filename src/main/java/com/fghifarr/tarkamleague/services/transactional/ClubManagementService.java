@@ -1,4 +1,4 @@
-package com.fghifarr.tarkamleague.services;
+package com.fghifarr.tarkamleague.services.transactional;
 
 import com.fghifarr.tarkamleague.entities.Club;
 import com.fghifarr.tarkamleague.models.requests.ClubReq;

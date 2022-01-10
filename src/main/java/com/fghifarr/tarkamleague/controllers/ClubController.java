@@ -3,7 +3,7 @@ package com.fghifarr.tarkamleague.controllers;
 import com.fghifarr.tarkamleague.models.requests.ClubListingCriteria;
 import com.fghifarr.tarkamleague.models.requests.ClubReq;
 import com.fghifarr.tarkamleague.models.responses.ClubResp;
-import com.fghifarr.tarkamleague.services.ClubManagementService;
+import com.fghifarr.tarkamleague.services.transactional.ClubManagementService;
 import com.fghifarr.tarkamleague.services.ClubService;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Page;
