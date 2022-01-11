@@ -22,6 +22,10 @@ public class Player extends BaseEntity {
     @ManyToOne @JoinColumn(name = "club_id")
     private Club club;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private PersonalDetails profile;
+
     public Player(String name) {
         this.name = name;
     }

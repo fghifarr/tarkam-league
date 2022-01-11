@@ -3,6 +3,7 @@ package com.fghifarr.tarkamleague.configs;
 import com.fghifarr.tarkamleague.configs.constants.RoleConstant;
 import com.fghifarr.tarkamleague.configs.constants.RoleGroupConstant;
 import com.fghifarr.tarkamleague.entities.*;
+import com.fghifarr.tarkamleague.models.requests.init.InitPlayerReq;
 import com.fghifarr.tarkamleague.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -113,27 +115,35 @@ public class InitData {
     }
 
     @Bean
-    CommandLineRunner initPlayer(PlayerRepository playerRepository, ClubRepository clubRepository) {
+    CommandLineRunner initPlayer(ClubRepository clubRepository, PersonalDetailsRepository personalDetailsRepository) {
         return args -> {
             if (!Objects.equals(ddlAuto, "create-drop"))
                 return;
 
-            Club liverpool = clubRepository.findByName("Liverpool");
-            Club manUtd = clubRepository.findByName("Manchester United");
-            Club manCity = clubRepository.findByName("Manchester City");
-
-            List<Player> playerList = List.of(
-                    new Player("Steven Gerrard"),
-                    new Player("Wayne Rooney"),
-                    new Player("Mohammed Salah", liverpool),
-                    new Player("Trent Alexander-Arnold", liverpool),
-                    new Player("Andrew Robertson", liverpool),
-                    new Player("David De Gea", manUtd),
-                    new Player("Kevin De Bruyne", manCity)
+            List<InitPlayerReq> playerReqs = List.of(
+                    new InitPlayerReq("Steven Gerrard", "", Date.valueOf("1980-05-30"), "England", 185),
+                    new InitPlayerReq("Wayne Rooney", "", Date.valueOf("1985-10-24"), "England", 176),
+                    new InitPlayerReq("Mohamed Salah", "Liverpool", Date.valueOf("1992-06-15"), "Egypt", 175),
+                    new InitPlayerReq("Trent Alexander-Arnold", "Liverpool", Date.valueOf("1998-10-07"), "England", 175),
+                    new InitPlayerReq("Andrew Robertson", "Liverpool", Date.valueOf("1994-03-11"), "Scotland", 178),
+                    new InitPlayerReq("David de Gea", "Manchester United", Date.valueOf("1990-11-07"), "Spain", 192),
+                    new InitPlayerReq("Kevin De Bruyne", "Manchester City", Date.valueOf("1991-06-28"), "Belgium", 181)
             );
 
-            for (Player player : playerList) {
-                log.info("Preloading Player: " + playerRepository.saveAndFlush(player).getName());
+            for (InitPlayerReq playerReq : playerReqs) {
+                Club club = clubRepository.findByName(playerReq.getClub());
+                Player player = Player.builder()
+                        .name(playerReq.getName())
+                        .club(club)
+                        .build();
+                PersonalDetails profile = PersonalDetails.builder()
+                        .dob(playerReq.getDob())
+                        .nationality(playerReq.getNationality())
+                        .height(playerReq.getHeight())
+                        .player(player)
+                        .build();
+
+                log.info("Preloading Player: " + personalDetailsRepository.saveAndFlush(profile).getPlayer().getName());
             }
         };
     }
