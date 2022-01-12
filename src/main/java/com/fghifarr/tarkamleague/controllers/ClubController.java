@@ -1,5 +1,6 @@
 package com.fghifarr.tarkamleague.controllers;
 
+import com.fghifarr.tarkamleague.configs.constants.RoleConstant;
 import com.fghifarr.tarkamleague.models.requests.ClubListingCriteria;
 import com.fghifarr.tarkamleague.models.requests.ClubReq;
 import com.fghifarr.tarkamleague.models.responses.ClubResp;
@@ -56,7 +57,7 @@ public class ClubController extends BaseController {
         return club;
     }
 
-    @PreAuthorize("hasAnyRole('Administrator', 'Creator')")
+    @PreAuthorize(RoleConstant.HAS_ROLE_ADMINISTRATOR_CREATOR)
     @PostMapping("")
     public @ResponseBody
     String create(@Valid @RequestBody ClubReq clubReq) {
@@ -65,7 +66,7 @@ public class ClubController extends BaseController {
         return "Successfully added new club: " + newClub.getName();
     }
 
-    @PreAuthorize("hasAnyRole('Administrator', 'Editor')")
+    @PreAuthorize(RoleConstant.HAS_ROLE_ADMINISTRATOR_EDITOR)
     @PutMapping("/{id}")
     public @ResponseBody
     String update(@PathVariable Long id,
@@ -78,7 +79,7 @@ public class ClubController extends BaseController {
         return "Successfully updated club: " + updatedClub.getName();
     }
 
-    @PreAuthorize("hasRole('Administrator')")
+    @PreAuthorize(RoleConstant.HAS_ROLE_ADMINISTRATOR)
     @DeleteMapping("/{id}")
     public @ResponseBody
     String delete(@PathVariable Long id) {

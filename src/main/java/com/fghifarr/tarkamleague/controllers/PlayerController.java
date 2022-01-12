@@ -1,5 +1,6 @@
 package com.fghifarr.tarkamleague.controllers;
 
+import com.fghifarr.tarkamleague.configs.constants.RoleConstant;
 import com.fghifarr.tarkamleague.models.requests.PlayerListingCriteria;
 import com.fghifarr.tarkamleague.models.requests.PlayerReq;
 import com.fghifarr.tarkamleague.models.responses.PlayerResp;
@@ -56,7 +57,7 @@ public class PlayerController extends BaseController {
         return player;
     }
 
-    @PreAuthorize("hasAnyRole('Administrator', 'Creator')")
+    @PreAuthorize(RoleConstant.HAS_ROLE_ADMINISTRATOR_CREATOR)
     @PostMapping("")
     public @ResponseBody
     String  create(@Valid @RequestBody PlayerReq playerReq) {
@@ -65,7 +66,7 @@ public class PlayerController extends BaseController {
         return "Successfully created a new player: " + newPlayer.getName();
     }
 
-    @PreAuthorize("hasAnyRole('Administrator', 'Editor')")
+    @PreAuthorize(RoleConstant.HAS_ROLE_ADMINISTRATOR_EDITOR)
     @PutMapping("/{id}")
     public @ResponseBody
     String update(@PathVariable Long id, @Valid @RequestBody PlayerReq playerReq) {
@@ -77,7 +78,7 @@ public class PlayerController extends BaseController {
         return "Successfully updated a player: " + updatedPlayer.getName();
     }
 
-    @PreAuthorize("hasRole('Administrator')")
+    @PreAuthorize(RoleConstant.HAS_ROLE_ADMINISTRATOR)
     @DeleteMapping("/{id}")
     public @ResponseBody
     String delete(@PathVariable Long id) {
