@@ -3,6 +3,7 @@ package com.fghifarr.tarkamleague.controllers;
 import com.fghifarr.tarkamleague.configs.constants.RoleConstant;
 import com.fghifarr.tarkamleague.models.requests.PlayerListingCriteria;
 import com.fghifarr.tarkamleague.models.requests.PlayerReq;
+import com.fghifarr.tarkamleague.models.responses.PlayerDetailsResp;
 import com.fghifarr.tarkamleague.models.responses.PlayerResp;
 import com.fghifarr.tarkamleague.services.PlayerService;
 import com.fghifarr.tarkamleague.services.transactional.PlayerManagementService;
@@ -48,13 +49,13 @@ public class PlayerController extends BaseController {
 
     @GetMapping("/{id}")
     public @ResponseBody
-    PlayerResp get(@PathVariable Long id) {
-        PlayerResp player = playerService.get(id);
-        if (player == null)
+    PlayerDetailsResp get(@PathVariable Long id) {
+        PlayerDetailsResp playerDetails = playerService.get(id);
+        if (playerDetails == null)
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "There is no player with id: " + id);
 
-        return player;
+        return playerDetails;
     }
 
     @PreAuthorize(RoleConstant.HAS_ROLE_ADMINISTRATOR_CREATOR)

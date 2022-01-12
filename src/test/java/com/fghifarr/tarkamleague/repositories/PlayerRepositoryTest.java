@@ -1,8 +1,11 @@
 package com.fghifarr.tarkamleague.repositories;
 
 import com.fghifarr.tarkamleague.entities.Club;
+import com.fghifarr.tarkamleague.entities.PersonalDetails;
 import com.fghifarr.tarkamleague.entities.Player;
 import com.fghifarr.tarkamleague.models.requests.PlayerListingCriteria;
+import com.fghifarr.tarkamleague.models.requests.init.InitPlayerReq;
+import com.fghifarr.tarkamleague.models.responses.PlayerDetailsResp;
 import com.fghifarr.tarkamleague.models.responses.PlayerResp;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +18,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -29,6 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class PlayerRepositoryTest {
     @Autowired
     private PlayerRepository playerRepository;
+    @Autowired
+    private PersonalDetailsRepository personalDetailsRepository;
     @Autowired
     private ClubRepository clubRepository;
 
@@ -46,20 +52,34 @@ public class PlayerRepositoryTest {
             new Club(6L, "Leicester City")
     );
 
-    List<Player> playerList = List.of(
-            new Player(7L, "Steven Gerrard"),
-            new Player(8L, "Wayne Rooney"),
-            new Player(9L, "Mohammed Salah", liverpool),
-            new Player(10L, "Trent Alexander-Arnold", liverpool),
-            new Player(11L, "Andrew Robertson", liverpool),
-            new Player(12L, "David De Gea", manUtd),
-            new Player(13L, "Kevin De Bruyne", manCity)
+    List<InitPlayerReq> playerReqs = List.of(
+            new InitPlayerReq("Steven Gerrard", "", Date.valueOf("1980-05-30"), "England", 185),
+            new InitPlayerReq("Wayne Rooney", "", Date.valueOf("1985-10-24"), "England", 176),
+            new InitPlayerReq("Mohamed Salah", "Liverpool", Date.valueOf("1992-06-15"), "Egypt", 175),
+            new InitPlayerReq("Trent Alexander-Arnold", "Liverpool", Date.valueOf("1998-10-07"), "England", 175),
+            new InitPlayerReq("Andrew Robertson", "Liverpool", Date.valueOf("1994-03-11"), "Scotland", 178),
+            new InitPlayerReq("David de Gea", "Manchester United", Date.valueOf("1990-11-07"), "Spain", 192),
+            new InitPlayerReq("Kevin De Bruyne", "Manchester City", Date.valueOf("1991-06-28"), "Belgium", 181)
     );
 
     @BeforeEach
     public void initData() {
         clubRepository.saveAllAndFlush(clubList);
-        playerRepository.saveAllAndFlush(playerList);
+
+        for (InitPlayerReq playerReq : playerReqs) {
+            Club club = clubRepository.findByName(playerReq.getClub());
+            Player player = Player.builder()
+                    .name(playerReq.getName())
+                    .club(club)
+                    .build();
+            PersonalDetails profile = PersonalDetails.builder()
+                    .dob(playerReq.getDob())
+                    .nationality(playerReq.getNationality())
+                    .height(playerReq.getHeight())
+                    .player(player)
+                    .build();
+            personalDetailsRepository.saveAndFlush(profile);
+        }
     }
 
     @AfterEach
@@ -78,7 +98,7 @@ public class PlayerRepositoryTest {
                 .findAllRespWithQueries(criteria.getQuery(), criteria.getClub(), criteria);
         List<PlayerResp> result = page.getContent();
 
-        assertThat(result.size()).isEqualTo(playerList.size());
+        assertThat(result.size()).isEqualTo(playerReqs.size());
 
         long idComparator = Integer.MIN_VALUE;
         for (PlayerResp player : result) {
@@ -90,18 +110,18 @@ public class PlayerRepositoryTest {
     @Test
     public void findAllRespWithQueries_success() {
         String query = "aNd";
-        Long clubId = liverpool.getId();
+        Club club = liverpool;
         String sortBy = "id";
         Sort.Direction order = Sort.Direction.DESC;
         int limit = 12;
         int offset = 0;
         PlayerListingCriteria criteria = new PlayerListingCriteria(
-                query, clubId, offset, limit, sortBy, order
+                query, club.getId(), offset, limit, sortBy, order
         );
-        List<String> ans = playerList.stream()
+        List<String> ans = playerReqs.stream()
                 .filter(player -> player.getName().toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT)))
-                .filter(player -> player.getClub() != null && Objects.equals(player.getClub().getId(), clubId))
-                .map(Player::getName)
+                .filter(player -> player.getClub() != null && Objects.equals(player.getClub(), club.getName()))
+                .map(InitPlayerReq::getName)
                 .collect(Collectors.toList());
 
         Page<PlayerResp> page = playerRepository
@@ -124,16 +144,16 @@ public class PlayerRepositoryTest {
     @Test
     public void findRespById_success() {
         Long id = 7L;
-        PlayerResp player = playerRepository.findRespById(id);
+        PlayerDetailsResp playerDetails = playerRepository.findRespById(id);
 
-        assertThat(player.getId()).isEqualTo(id);
+        assertThat(playerDetails.getId()).isEqualTo(id);
     }
 
     @Test
     public void findRespById_notFound() {
         Long id = 70L;
-        PlayerResp playerResp = playerRepository.findRespById(id);
+        PlayerDetailsResp playerDetails = playerRepository.findRespById(id);
 
-        assertThat(playerResp).isNull();
+        assertThat(playerDetails).isNull();
     }
 }

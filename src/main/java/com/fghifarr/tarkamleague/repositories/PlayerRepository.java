@@ -2,6 +2,7 @@ package com.fghifarr.tarkamleague.repositories;
 
 import com.fghifarr.tarkamleague.entities.Player;
 import com.fghifarr.tarkamleague.models.responses.PlayerResp;
+import com.fghifarr.tarkamleague.models.responses.PlayerDetailsResp;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,8 +17,10 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
     Page<PlayerResp> findAllRespWithQueries(String player, Long club, Pageable pageable);
 
     @Query("SELECT " +
-            "new com.fghifarr.tarkamleague.models.responses.PlayerResp(p.id, p.name, c.name) " +
-            "FROM Player p LEFT JOIN p.club c " +
+            "new com.fghifarr.tarkamleague.models.responses.PlayerDetailsResp(p.id, p.name, c.name, pr.dob, pr.nationality, pr.height) " +
+            "FROM Player p " +
+            "LEFT JOIN p.club c " +
+            "LEFT JOIN p.profile pr " +
             "WHERE p.id = ?1")
-    PlayerResp findRespById(Long id);
+    PlayerDetailsResp findRespById(Long id);
 }

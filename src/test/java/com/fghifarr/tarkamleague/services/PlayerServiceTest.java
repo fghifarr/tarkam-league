@@ -1,13 +1,13 @@
 package com.fghifarr.tarkamleague.services;
 
 import com.fghifarr.tarkamleague.entities.Club;
+import com.fghifarr.tarkamleague.entities.PersonalDetails;
 import com.fghifarr.tarkamleague.entities.Player;
-import com.fghifarr.tarkamleague.models.requests.ClubListingCriteria;
 import com.fghifarr.tarkamleague.models.requests.PlayerListingCriteria;
-import com.fghifarr.tarkamleague.models.responses.ClubResp;
+import com.fghifarr.tarkamleague.models.requests.init.InitPlayerReq;
+import com.fghifarr.tarkamleague.models.responses.PlayerDetailsResp;
 import com.fghifarr.tarkamleague.models.responses.PlayerResp;
 import com.fghifarr.tarkamleague.repositories.PlayerRepository;
-import com.fghifarr.tarkamleague.services.PlayerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,8 +17,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -41,19 +43,47 @@ public class PlayerServiceTest {
     //-----DATA GENERATOR-----
     //========================
     List<Player> createPlayerList() {
-        Club liverpool = new Club(1L, "Liverpool");
-        Club manCity = new Club(2L, "Manchester City");
-        Club manUtd = new Club(3L, "Manchester United");
-
-        return List.of(
-                new Player(7L, "Steven Gerrard"),
-                new Player(8L, "Wayne Rooney"),
-                new Player(9L, "Mohammed Salah", liverpool),
-                new Player(10L, "Trent Alexander-Arnold", liverpool),
-                new Player(11L, "Andrew Robertson", liverpool),
-                new Player(12L, "David De Gea", manUtd),
-                new Player(13L, "Kevin De Bruyne", manCity)
+        //Club list
+        List<Club> clubList = List.of(
+                new Club(1L, "Liverpool"),
+                new Club(2L, "Manchester City"),
+                new Club(3L, "Manchester United")
         );
+        //Raw player list
+        List<InitPlayerReq> playerReqs = List.of(
+                new InitPlayerReq("Steven Gerrard", "", Date.valueOf("1980-05-30"), "England", 185),
+                new InitPlayerReq("Wayne Rooney", "", Date.valueOf("1985-10-24"), "England", 176),
+                new InitPlayerReq("Mohamed Salah", "Liverpool", Date.valueOf("1992-06-15"), "Egypt", 175),
+                new InitPlayerReq("Trent Alexander-Arnold", "Liverpool", Date.valueOf("1998-10-07"), "England", 175),
+                new InitPlayerReq("Andrew Robertson", "Liverpool", Date.valueOf("1994-03-11"), "Scotland", 178),
+                new InitPlayerReq("David de Gea", "Manchester United", Date.valueOf("1990-11-07"), "Spain", 192),
+                new InitPlayerReq("Kevin De Bruyne", "Manchester City", Date.valueOf("1991-06-28"), "Belgium", 181)
+        );
+        //Player List
+        List<Player> playerList = new ArrayList<>();
+        long counter = 1L;
+        for (InitPlayerReq playerReq : playerReqs) {
+            Club club = clubList.stream()
+                    .filter(it -> Objects.equals(it.getName(), playerReq.getName()))
+                    .findAny().orElse(null);
+            Player player = Player.builder()
+                    .name(playerReq.getName())
+                    .club(club)
+                    .build();
+            player.setId(counter);
+            PersonalDetails profile = PersonalDetails.builder()
+                    .dob(playerReq.getDob())
+                    .nationality(playerReq.getNationality())
+                    .height(playerReq.getHeight())
+                    .player(player)
+                    .build();
+            player.setProfile(profile);
+
+            playerList.add(player);
+            counter++;
+        }
+
+        return playerList;
     }
 
     Page<PlayerResp> createPlayerPage() {
@@ -94,5 +124,36 @@ public class PlayerServiceTest {
         List<PlayerResp> result = page.getContent();
 
         assertThat(result.size()).isEqualTo(0);
+    }
+
+    //=============
+    //-----GET-----
+    //=============
+    @Test
+    public void findRespById_success() {
+        Player player = Player.builder()
+                .name("Steven Gerrard")
+                .build();
+        PersonalDetails profile = PersonalDetails.builder()
+                .player(player)
+                .dob(Date.valueOf("1980-05-30"))
+                .nationality("England")
+                .height(185)
+                .build();
+        player.setProfile(profile);
+        player.setId(1L);
+
+        when(playerRepository.findRespById(any(Long.class))).thenReturn(new PlayerDetailsResp(player));
+        PlayerDetailsResp playerResp = playerRepository.findRespById(player.getId());
+
+        assertThat(playerResp.getId()).isEqualTo(player.getId());
+    }
+
+    @Test
+    public void findRespById_notFound() {
+        when(playerRepository.findRespById(any(Long.class))).thenReturn(null);
+        PlayerDetailsResp playerResp = playerRepository.findRespById(1L);
+
+        assertThat(playerResp).isEqualTo(null);
     }
 }
