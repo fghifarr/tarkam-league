@@ -1,6 +1,6 @@
 package com.fghifarr.tarkamleague.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fghifarr.tarkamleague.configs.constants.RoleConstant;
 import com.fghifarr.tarkamleague.entities.Club;
 import com.fghifarr.tarkamleague.models.requests.ClubListingCriteria;
 import com.fghifarr.tarkamleague.models.requests.ClubReq;
@@ -9,15 +9,13 @@ import com.fghifarr.tarkamleague.services.transactional.ClubManagementService;
 import com.fghifarr.tarkamleague.services.ClubService;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,19 +30,13 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ClubController.class)
-@AutoConfigureMockMvc
-public class ClubControllerTest {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class ClubControllerTest extends BaseControllerTest {
 
     @MockBean
     private ClubService clubService;
     @MockBean
     private ClubManagementService clubManagementService;
-
-    @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private ObjectMapper mapper;
 
     //========================
     //-----DATA GENERATOR-----
@@ -159,8 +151,8 @@ public class ClubControllerTest {
     //==============
     //----CREATE----
     //==============
-    @Test
-    public void create_success() throws Exception {
+    @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
+    public void create_byAdministrator_success() throws Exception {
         Club club = new Club(1L, "Liverpool");
         ClubReq clubReq = new ClubReq(club.getName());
         ClubResp clubResp = new ClubResp(club);
@@ -177,11 +169,55 @@ public class ClubControllerTest {
                 .andExpect(jsonPath("$", Matchers.is(expectedMsg)));
     }
 
+    @Test @WithMockUser(roles = RoleConstant.CREATOR)
+    public void create_byCreator_success() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        ClubReq clubReq = new ClubReq(club.getName());
+        ClubResp clubResp = new ClubResp(club);
+        String expectedMsg = "Successfully added new club: " + clubResp.getName();
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/clubs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(clubReq))
+                .accept(MediaType.APPLICATION_JSON);
+
+        when(clubManagementService.create(any(ClubReq.class))).thenReturn(clubResp);
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", Matchers.is(expectedMsg)));
+    }
+
+    @Test @WithMockUser(roles = RoleConstant.VIEWER)
+    public void create_forbidden() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        ClubReq clubReq = new ClubReq(club.getName());
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/clubs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(clubReq))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void create_unauthorized() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        ClubReq clubReq = new ClubReq(club.getName());
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/clubs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(clubReq))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isUnauthorized());
+    }
+
     //==============
     //----UPDATE----
     //==============
-    @Test
-    public void update_success() throws Exception {
+    @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
+    public void update_byAdministrator_success() throws Exception {
         Club club = new Club(1L, "Liverpool");
         ClubReq clubReq = new ClubReq(club.getName());
         ClubResp clubResp = new ClubResp(club);
@@ -198,7 +234,51 @@ public class ClubControllerTest {
                 .andExpect(jsonPath("$", Matchers.is(expectedMsg)));
     }
 
+    @Test @WithMockUser(roles = RoleConstant.EDITOR)
+    public void update_byEditor_success() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        ClubReq clubReq = new ClubReq(club.getName());
+        ClubResp clubResp = new ClubResp(club);
+        String expectedMsg = "Successfully updated club: " + clubResp.getName();
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/clubs/" + club.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(clubReq))
+                .accept(MediaType.APPLICATION_JSON);
+
+        when(clubManagementService.update(any(Long.class), any(ClubReq.class))).thenReturn(clubResp);
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", Matchers.is(expectedMsg)));
+    }
+
+    @Test @WithMockUser(roles = RoleConstant.VIEWER)
+    public void update_forbidden() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        ClubReq clubReq = new ClubReq(club.getName());
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/clubs/" + club.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(clubReq))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isForbidden());
+    }
+
     @Test
+    public void update_unauthorized() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        ClubReq clubReq = new ClubReq(club.getName());
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/clubs/" + club.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(clubReq))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
     public void update_notFound() throws Exception {
         Club club = new Club(1L, "Liverpool");
         ClubReq clubReq = new ClubReq(club.getName());
@@ -223,8 +303,8 @@ public class ClubControllerTest {
     //==============
     //----DELETE----
     //==============
-    @Test
-    public void delete_success() throws Exception {
+    @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
+    public void delete_byAdministrator_success() throws Exception {
         Club club = new Club(1L, "Liverpool");
         ClubResp clubResp = new ClubResp(club);
         String expectedMsg = "Successfully deleted club: " + clubResp.getName();
@@ -236,7 +316,23 @@ public class ClubControllerTest {
                 .andExpect(jsonPath("$", Matchers.is(expectedMsg)));
     }
 
+    @Test @WithMockUser(roles = RoleConstant.VIEWER)
+    public void delete_forbidden() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/clubs/" + club.getId()))
+                .andExpect(status().isForbidden());
+    }
+
     @Test
+    public void delete_unauthorized() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/clubs/" + club.getId()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
     public void delete_notFound() throws Exception {
         Club club = new Club(1L, "Liverpool");
         String reason = "There is no club with id: " + club.getId();

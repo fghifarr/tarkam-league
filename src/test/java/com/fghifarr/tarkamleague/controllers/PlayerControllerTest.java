@@ -1,6 +1,6 @@
 package com.fghifarr.tarkamleague.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fghifarr.tarkamleague.configs.constants.RoleConstant;
 import com.fghifarr.tarkamleague.entities.Club;
 import com.fghifarr.tarkamleague.entities.Player;
 import com.fghifarr.tarkamleague.models.requests.PlayerReq;
@@ -10,15 +10,13 @@ import com.fghifarr.tarkamleague.services.PlayerService;
 import com.fghifarr.tarkamleague.services.transactional.PlayerManagementService;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,19 +31,13 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(PlayerController.class)
-@AutoConfigureMockMvc
-public class PlayerControllerTest {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class PlayerControllerTest extends BaseControllerTest {
 
     @MockBean
     private PlayerService playerService;
     @MockBean
     private PlayerManagementService playerManagementService;
-
-    @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private ObjectMapper mapper;
 
     //========================
     //-----DATA GENERATOR-----
@@ -167,8 +159,8 @@ public class PlayerControllerTest {
     //==============
     //----CREATE----
     //==============
-    @Test
-    public void create_success() throws Exception {
+    @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
+    public void create_byAdmin_success() throws Exception {
         Club club = new Club(1L, "Liverpool");
         Player player = new Player(2L, "Steven Gerrard", club);
         PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
@@ -186,11 +178,58 @@ public class PlayerControllerTest {
                 .andExpect(jsonPath("$", Matchers.is(expectedMsg)));
     }
 
+    @Test @WithMockUser(roles = RoleConstant.CREATOR)
+    public void create_byCreator_success() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        Player player = new Player(2L, "Steven Gerrard", club);
+        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        PlayerResp playerResp = new PlayerResp(player);
+        String expectedMsg = "Successfully created a new player: " + playerResp.getName();
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/players")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(playerReq))
+                .accept(MediaType.APPLICATION_JSON);
+
+        when(playerManagementService.create(any(PlayerReq.class))).thenReturn(playerResp);
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", Matchers.is(expectedMsg)));
+    }
+
+    @Test @WithMockUser(roles = RoleConstant.VIEWER)
+    public void create_forbidden() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        Player player = new Player(2L, "Steven Gerrard", club);
+        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/players")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(playerReq))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void create_unauthorized() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        Player player = new Player(2L, "Steven Gerrard", club);
+        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/players")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(playerReq))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isUnauthorized());
+    }
+
     //==============
     //----UPDATE----
     //==============
-    @Test
-    public void update_success() throws Exception {
+    @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
+    public void update_byAdministrator_success() throws Exception {
         Club club = new Club(1L, "Liverpool");
         Player player = new Player(2L, "Steven Gerrard", club);
         PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
@@ -208,7 +247,54 @@ public class PlayerControllerTest {
                 .andExpect(jsonPath("$", Matchers.is(expectedMsg)));
     }
 
+    @Test @WithMockUser(roles = RoleConstant.EDITOR)
+    public void update_byEditor_success() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        Player player = new Player(2L, "Steven Gerrard", club);
+        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        PlayerResp playerResp = new PlayerResp(player);
+        String expectedMsg = "Successfully updated a player: " + playerResp.getName();
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/players/" + player.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(playerReq))
+                .accept(MediaType.APPLICATION_JSON);
+
+        when(playerManagementService.update(any(Long.class), any(PlayerReq.class))).thenReturn(playerResp);
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", Matchers.is(expectedMsg)));
+    }
+
+    @Test @WithMockUser(roles = RoleConstant.VIEWER)
+    public void update_forbidden() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        Player player = new Player(2L, "Steven Gerrard", club);
+        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/players/" + player.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(playerReq))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isForbidden());
+    }
+
     @Test
+    public void update_unauthorized() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        Player player = new Player(2L, "Steven Gerrard", club);
+        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/players/" + player.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(playerReq))
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(mockRequest)
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
     public void update_notFound() throws Exception {
         Club club = new Club(1L, "Liverpool");
         Player player = new Player(2L, "Steven Gerrard", club);
@@ -223,6 +309,59 @@ public class PlayerControllerTest {
         when(playerManagementService.update(any(Long.class), any(PlayerReq.class))).thenReturn(null);
 
         mockMvc.perform(mockRequest)
+                .andExpect(status().isNotFound())
+                .andExpect(result -> {
+                    assertTrue(result.getResolvedException() instanceof ResponseStatusException);
+                }).andExpect(result -> {
+                    assertEquals(expectedMsg, result.getResolvedException().getMessage());
+                });
+    }
+
+    //==============
+    //----DELETE----
+    //==============
+    @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
+    public void delete_byAdministrator_success() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        Player player = new Player(2L, "Steven Gerrard", club);
+        PlayerResp playerResp = new PlayerResp(player);
+        String expectedMsg = "Successfully deleted a player: " + playerResp.getName();
+
+        when(playerManagementService.delete(any(Long.class))).thenReturn(playerResp);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/players/" + player.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", Matchers.is(expectedMsg)));
+    }
+
+    @Test @WithMockUser(roles = RoleConstant.VIEWER)
+    public void delete_forbidden() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        Player player = new Player(2L, "Steven Gerrard", club);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/players/" + player.getId()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void delete_unauthorized() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        Player player = new Player(2L, "Steven Gerrard", club);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/players/" + player.getId()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
+    public void delete_notFound() throws Exception {
+        Club club = new Club(1L, "Liverpool");
+        Player player = new Player(2L, "Steven Gerrard", club);
+        String reason = "There is no player with id: " + player.getId();
+        String expectedMsg = HttpStatus.NOT_FOUND + " \"" + reason + "\"";
+
+        when(playerManagementService.delete(any(Long.class))).thenReturn(null);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/players/" + player.getId()))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> {
                     assertTrue(result.getResolvedException() instanceof ResponseStatusException);
