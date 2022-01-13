@@ -14,6 +14,7 @@ import com.fghifarr.tarkamleague.services.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -78,7 +79,7 @@ public class PlayerManagementService {
         player.setPosition(playerReq.getPosition());
         player.setClub(club);
         player.setModifiedBy(editor);
-        player.setLastUpdated(new Date());
+        player.setLastUpdated(LocalDateTime.now());
         player.getProfile().setDob(profileReq.getDob());
         player.getProfile().setNationality(profileReq.getNationality());
         player.getProfile().setHeight(profileReq.getHeight());
