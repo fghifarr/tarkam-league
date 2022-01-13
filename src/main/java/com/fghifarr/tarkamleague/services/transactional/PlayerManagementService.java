@@ -53,7 +53,7 @@ public class PlayerManagementService {
         player.setModifiedBy(creator);
         PersonalDetails profile = PersonalDetails.builder()
                 .player(player)
-                .dob(playerReq.getProfile().getSqlDob())
+                .dob(playerReq.getProfile().getDob())
                 .nationality(playerReq.getProfile().getNationality())
                 .height(playerReq.getProfile().getHeight())
                 .build();
@@ -79,7 +79,7 @@ public class PlayerManagementService {
         player.setClub(club);
         player.setModifiedBy(editor);
         player.setLastUpdated(new Date());
-        player.getProfile().setDob(profileReq.getSqlDob());
+        player.getProfile().setDob(profileReq.getDob());
         player.getProfile().setNationality(profileReq.getNationality());
         player.getProfile().setHeight(profileReq.getHeight());
         saveByPersonalDetails(player);

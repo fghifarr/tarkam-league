@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -58,13 +58,13 @@ public class PlayerControllerTest extends BaseControllerTest {
         );
         //Raw player list
         List<InitPlayerReq> playerReqs = List.of(
-                new InitPlayerReq("Steven Gerrard", Player.Position.MIDFIELDER, "", Date.valueOf("1980-05-30"), "England", 185),
-                new InitPlayerReq("Wayne Rooney", Player.Position.FORWARD, "", Date.valueOf("1985-10-24"), "England", 176),
-                new InitPlayerReq("Mohamed Salah", Player.Position.FORWARD, "Liverpool", Date.valueOf("1992-06-15"), "Egypt", 175),
-                new InitPlayerReq("Trent Alexander-Arnold", Player.Position.DEFENDER, "Liverpool", Date.valueOf("1998-10-07"), "England", 175),
-                new InitPlayerReq("Andrew Robertson", Player.Position.DEFENDER, "Liverpool", Date.valueOf("1994-03-11"), "Scotland", 178),
-                new InitPlayerReq("David de Gea", Player.Position.GOALKEEPER, "Manchester United", Date.valueOf("1990-11-07"), "Spain", 192),
-                new InitPlayerReq("Kevin De Bruyne", Player.Position.MIDFIELDER, "Manchester City", Date.valueOf("1991-06-28"), "Belgium", 181)
+                new InitPlayerReq("Steven Gerrard", Player.Position.MIDFIELDER, "", LocalDate.parse("1980-05-30"), "England", 185),
+                new InitPlayerReq("Wayne Rooney", Player.Position.FORWARD, "", LocalDate.parse("1985-10-24"), "England", 176),
+                new InitPlayerReq("Mohamed Salah", Player.Position.FORWARD, "Liverpool", LocalDate.parse("1992-06-15"), "Egypt", 175),
+                new InitPlayerReq("Trent Alexander-Arnold", Player.Position.DEFENDER, "Liverpool", LocalDate.parse("1998-10-07"), "England", 175),
+                new InitPlayerReq("Andrew Robertson", Player.Position.DEFENDER, "Liverpool", LocalDate.parse("1994-03-11"), "Scotland", 178),
+                new InitPlayerReq("David de Gea", Player.Position.GOALKEEPER, "Manchester United", LocalDate.parse("1990-11-07"), "Spain", 192),
+                new InitPlayerReq("Kevin De Bruyne", Player.Position.MIDFIELDER, "Manchester City", LocalDate.parse("1991-06-28"), "Belgium", 181)
         );
         //Player List
         List<Player> playerList = new ArrayList<>();
@@ -120,7 +120,7 @@ public class PlayerControllerTest extends BaseControllerTest {
         player.setId(1L);
         PersonalDetails profile = PersonalDetails.builder()
                 .player(player)
-                .dob(Date.valueOf("1980-05-30"))
+                .dob(LocalDate.parse("1980-05-30"))
                 .nationality("England")
                 .height(185)
                 .build();
@@ -209,7 +209,7 @@ public class PlayerControllerTest extends BaseControllerTest {
         Player player = new Player(2L, "Steven Gerrard", club);
         PersonalDetails playerProfile = PersonalDetails.builder()
                 .player(player)
-                .dob(Date.valueOf("1980-05-30"))
+                .dob(LocalDate.parse("1980-05-30"))
                 .nationality("England")
                 .height(185)
                 .build();

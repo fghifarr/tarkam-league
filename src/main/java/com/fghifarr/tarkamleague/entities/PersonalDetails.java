@@ -5,7 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.sql.Date;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "personal_details")
@@ -26,7 +26,7 @@ public class PersonalDetails {
     private Player player;
 
     @NotNull(message = "Date of Birth cannot be null!")
-    private Date dob;
+    private LocalDate dob;
     @NotBlank(message = "Nationality cannot be blank!")
     private String nationality;
     private Integer height;

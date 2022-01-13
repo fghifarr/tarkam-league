@@ -21,7 +21,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -81,7 +81,7 @@ public class PlayerManagementServiceTest {
         player.setId(1L);
         PersonalDetails profile = PersonalDetails.builder()
                 .player(player)
-                .dob(Date.valueOf("1980-05-30"))
+                .dob(LocalDate.parse("1980-05-30"))
                 .nationality("England")
                 .height(185)
                 .build();

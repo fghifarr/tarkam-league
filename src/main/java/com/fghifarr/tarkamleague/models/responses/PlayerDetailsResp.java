@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -18,15 +18,11 @@ public class PlayerDetailsResp {
     private String club;
     private PlayerProfileResp profile;
 
-    public PlayerDetailsResp(Long id, String name, String club, Date dob, String nationality, Integer height) {
+    public PlayerDetailsResp(Long id, String name, String club, LocalDate dob, String nationality, Integer height) {
         this.id = id;
         this.name = name;
         this.club = club == null ? "Free Agent" : club;
         this.profile = new PlayerProfileResp(dob, nationality, height);
-    }
-
-    public PlayerDetailsResp(Long id, String name, String club, java.util.Date utilDob, String nationality, Integer height) {
-        this(id, name, club, new Date(utilDob.getTime()), nationality, height);
     }
 
     public PlayerDetailsResp(Player player) {
