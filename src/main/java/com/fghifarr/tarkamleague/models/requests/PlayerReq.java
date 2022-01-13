@@ -3,6 +3,7 @@ package com.fghifarr.tarkamleague.models.requests;
 import com.fghifarr.tarkamleague.entities.Player;
 import lombok.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -19,7 +20,7 @@ public class PlayerReq {
 
     private Long club;
 
-    @NotNull(message = "Profile cannot be null!")
+    @Valid
     private PersonalDetailsReq profile;
 
     public PlayerReq(String name) {
