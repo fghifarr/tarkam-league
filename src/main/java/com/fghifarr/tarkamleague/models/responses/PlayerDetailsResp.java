@@ -21,7 +21,7 @@ public class PlayerDetailsResp {
     public PlayerDetailsResp(Long id, String name, String club, Date dob, String nationality, Integer height) {
         this.id = id;
         this.name = name;
-        this.club = club;
+        this.club = club == null ? "Free Agent" : club;
         this.profile = new PlayerProfileResp(dob, nationality, height);
     }
 
@@ -30,14 +30,14 @@ public class PlayerDetailsResp {
 
         this.id = id;
         this.name = name;
-        this.club = club;
+        this.club = club == null ? "Free Agent" : club;
         this.profile = new PlayerProfileResp(dob, nationality, height);
     }
 
     public PlayerDetailsResp(Player player) {
         this.id = player.getId();
         this.name = player.getName();
-        this.club = player.getClubName();
+        this.club = player.getClubName() == null ? "Free Agent" : player.getClubName();
         this.profile = new PlayerProfileResp(player.getProfile());
     }
 }
