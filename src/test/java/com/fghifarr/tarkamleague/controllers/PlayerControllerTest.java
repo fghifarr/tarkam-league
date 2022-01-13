@@ -4,6 +4,7 @@ import com.fghifarr.tarkamleague.configs.constants.RoleConstant;
 import com.fghifarr.tarkamleague.entities.Club;
 import com.fghifarr.tarkamleague.entities.PersonalDetails;
 import com.fghifarr.tarkamleague.entities.Player;
+import com.fghifarr.tarkamleague.models.requests.PersonalDetailsReq;
 import com.fghifarr.tarkamleague.models.requests.PlayerReq;
 import com.fghifarr.tarkamleague.models.requests.PlayerListingCriteria;
 import com.fghifarr.tarkamleague.models.requests.init.InitPlayerReq;
@@ -57,13 +58,13 @@ public class PlayerControllerTest extends BaseControllerTest {
         );
         //Raw player list
         List<InitPlayerReq> playerReqs = List.of(
-                new InitPlayerReq("Steven Gerrard", "", Date.valueOf("1980-05-30"), "England", 185),
-                new InitPlayerReq("Wayne Rooney", "", Date.valueOf("1985-10-24"), "England", 176),
-                new InitPlayerReq("Mohamed Salah", "Liverpool", Date.valueOf("1992-06-15"), "Egypt", 175),
-                new InitPlayerReq("Trent Alexander-Arnold", "Liverpool", Date.valueOf("1998-10-07"), "England", 175),
-                new InitPlayerReq("Andrew Robertson", "Liverpool", Date.valueOf("1994-03-11"), "Scotland", 178),
-                new InitPlayerReq("David de Gea", "Manchester United", Date.valueOf("1990-11-07"), "Spain", 192),
-                new InitPlayerReq("Kevin De Bruyne", "Manchester City", Date.valueOf("1991-06-28"), "Belgium", 181)
+                new InitPlayerReq("Steven Gerrard", Player.Position.MIDFIELDER, "", Date.valueOf("1980-05-30"), "England", 185),
+                new InitPlayerReq("Wayne Rooney", Player.Position.FORWARD, "", Date.valueOf("1985-10-24"), "England", 176),
+                new InitPlayerReq("Mohamed Salah", Player.Position.FORWARD, "Liverpool", Date.valueOf("1992-06-15"), "Egypt", 175),
+                new InitPlayerReq("Trent Alexander-Arnold", Player.Position.DEFENDER, "Liverpool", Date.valueOf("1998-10-07"), "England", 175),
+                new InitPlayerReq("Andrew Robertson", Player.Position.DEFENDER, "Liverpool", Date.valueOf("1994-03-11"), "Scotland", 178),
+                new InitPlayerReq("David de Gea", Player.Position.GOALKEEPER, "Manchester United", Date.valueOf("1990-11-07"), "Spain", 192),
+                new InitPlayerReq("Kevin De Bruyne", Player.Position.MIDFIELDER, "Manchester City", Date.valueOf("1991-06-28"), "Belgium", 181)
         );
         //Player List
         List<Player> playerList = new ArrayList<>();
@@ -99,6 +100,47 @@ public class PlayerControllerTest extends BaseControllerTest {
                 .collect(Collectors.toList());
 
         return new PageImpl<>(playerRespList);
+    }
+
+    Club createClub() {
+        Club club = Club.builder()
+                .name("Liverpool")
+                .build();
+        club.setId(1L);
+
+        return club;
+    }
+
+    Player createPlayer(Club club) {
+        Player player = Player.builder()
+                .name("Steven Gerrard")
+                .position(Player.Position.MIDFIELDER)
+                .club(club)
+                .build();
+        player.setId(1L);
+        PersonalDetails profile = PersonalDetails.builder()
+                .player(player)
+                .dob(Date.valueOf("1980-05-30"))
+                .nationality("England")
+                .height(185)
+                .build();
+        profile.setPlayer(player);
+        player.setProfile(profile);
+
+        return player;
+    }
+
+    PlayerReq createPlayerRequest(Player player) {
+        return PlayerReq.builder()
+                .name(player.getName())
+                .position(player.getPosition())
+                .club(player.getClub() != null ? player.getClub().getId() : null)
+                .profile(PersonalDetailsReq.builder()
+                        .dob(player.getProfile().getDob())
+                        .nationality(player.getProfile().getNationality())
+                        .height(player.getProfile().getHeight())
+                        .build())
+                .build();
     }
 
     //==============
@@ -202,9 +244,9 @@ public class PlayerControllerTest extends BaseControllerTest {
     //==============
     @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
     public void create_byAdmin_success() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
-        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        Club club = createClub();
+        Player player = createPlayer(club);
+        PlayerReq playerReq = createPlayerRequest(player);
         PlayerResp playerResp = new PlayerResp(player);
         String expectedMsg = "Successfully created a new player: " + playerResp.getName();
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/players")
@@ -221,9 +263,9 @@ public class PlayerControllerTest extends BaseControllerTest {
 
     @Test @WithMockUser(roles = RoleConstant.CREATOR)
     public void create_byCreator_success() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
-        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        Club club = createClub();
+        Player player = createPlayer(club);
+        PlayerReq playerReq = createPlayerRequest(player);
         PlayerResp playerResp = new PlayerResp(player);
         String expectedMsg = "Successfully created a new player: " + playerResp.getName();
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/players")
@@ -240,9 +282,9 @@ public class PlayerControllerTest extends BaseControllerTest {
 
     @Test @WithMockUser(roles = RoleConstant.VIEWER)
     public void create_forbidden() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
-        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        Club club = createClub();
+        Player player = createPlayer(club);
+        PlayerReq playerReq = createPlayerRequest(player);
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/players")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(playerReq))
@@ -254,9 +296,9 @@ public class PlayerControllerTest extends BaseControllerTest {
 
     @Test
     public void create_unauthorized() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
-        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        Club club = createClub();
+        Player player = createPlayer(club);
+        PlayerReq playerReq = createPlayerRequest(player);
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/players")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(playerReq))
@@ -271,9 +313,9 @@ public class PlayerControllerTest extends BaseControllerTest {
     //==============
     @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
     public void update_byAdministrator_success() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
-        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        Club club = createClub();
+        Player player = createPlayer(club);
+        PlayerReq playerReq = createPlayerRequest(player);
         PlayerResp playerResp = new PlayerResp(player);
         String expectedMsg = "Successfully updated a player: " + playerResp.getName();
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/players/" + player.getId())
@@ -290,9 +332,9 @@ public class PlayerControllerTest extends BaseControllerTest {
 
     @Test @WithMockUser(roles = RoleConstant.EDITOR)
     public void update_byEditor_success() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
-        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        Club club = createClub();
+        Player player = createPlayer(club);
+        PlayerReq playerReq = createPlayerRequest(player);
         PlayerResp playerResp = new PlayerResp(player);
         String expectedMsg = "Successfully updated a player: " + playerResp.getName();
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/players/" + player.getId())
@@ -309,9 +351,9 @@ public class PlayerControllerTest extends BaseControllerTest {
 
     @Test @WithMockUser(roles = RoleConstant.VIEWER)
     public void update_forbidden() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
-        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        Club club = createClub();
+        Player player = createPlayer(club);
+        PlayerReq playerReq = createPlayerRequest(player);
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/players/" + player.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(playerReq))
@@ -323,9 +365,9 @@ public class PlayerControllerTest extends BaseControllerTest {
 
     @Test
     public void update_unauthorized() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
-        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        Club club = createClub();
+        Player player = createPlayer(club);
+        PlayerReq playerReq = createPlayerRequest(player);
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/players/" + player.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(playerReq))
@@ -337,9 +379,9 @@ public class PlayerControllerTest extends BaseControllerTest {
 
     @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
     public void update_notFound() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
-        PlayerReq playerReq = new PlayerReq(player.getName(), club.getId());
+        Club club = createClub();
+        Player player = createPlayer(club);
+        PlayerReq playerReq = createPlayerRequest(player);
         String reason = "There is no player with id: " + player.getId();
         String expectedMsg = HttpStatus.NOT_FOUND + " \"" + reason + "\"";
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/players/" + player.getId())
@@ -363,8 +405,8 @@ public class PlayerControllerTest extends BaseControllerTest {
     //==============
     @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
     public void delete_byAdministrator_success() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
+        Club club = createClub();
+        Player player = createPlayer(club);
         PlayerResp playerResp = new PlayerResp(player);
         String expectedMsg = "Successfully deleted a player: " + playerResp.getName();
 
@@ -377,8 +419,8 @@ public class PlayerControllerTest extends BaseControllerTest {
 
     @Test @WithMockUser(roles = RoleConstant.VIEWER)
     public void delete_forbidden() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
+        Club club = createClub();
+        Player player = createPlayer(club);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/players/" + player.getId()))
                 .andExpect(status().isForbidden());
@@ -386,8 +428,8 @@ public class PlayerControllerTest extends BaseControllerTest {
 
     @Test
     public void delete_unauthorized() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
+        Club club = createClub();
+        Player player = createPlayer(club);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/players/" + player.getId()))
                 .andExpect(status().isUnauthorized());
@@ -395,8 +437,8 @@ public class PlayerControllerTest extends BaseControllerTest {
 
     @Test @WithMockUser(roles = RoleConstant.ADMINISTRATOR)
     public void delete_notFound() throws Exception {
-        Club club = new Club(1L, "Liverpool");
-        Player player = new Player(2L, "Steven Gerrard", club);
+        Club club = createClub();
+        Player player = createPlayer(club);
         String reason = "There is no player with id: " + player.getId();
         String expectedMsg = HttpStatus.NOT_FOUND + " \"" + reason + "\"";
 

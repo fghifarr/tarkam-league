@@ -1,5 +1,6 @@
 package com.fghifarr.tarkamleague.models.requests.init;
 
+import com.fghifarr.tarkamleague.entities.Player;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import java.sql.Date;
 @AllArgsConstructor
 public class InitPlayerReq {
     private String name;
+    private Player.Position position;
 
     //club
     private String club;

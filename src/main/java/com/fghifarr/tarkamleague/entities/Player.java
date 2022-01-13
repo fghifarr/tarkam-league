@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "player")
@@ -16,6 +17,10 @@ public class Player extends BaseEntity {
 
     private static final long serialVersionUID = 2L;
 
+    public enum Position {
+        GOALKEEPER, DEFENDER, MIDFIELDER, FORWARD
+    }
+
     @NotBlank(message = "Name cannot be null!")
     private String name;
 
@@ -25,6 +30,10 @@ public class Player extends BaseEntity {
     @OneToOne(cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private PersonalDetails profile;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull(message = "Position cannot be null!")
+    private Position position;
 
     public Player(String name) {
         this.name = name;
