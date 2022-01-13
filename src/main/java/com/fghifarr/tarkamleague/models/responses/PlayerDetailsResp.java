@@ -26,12 +26,7 @@ public class PlayerDetailsResp {
     }
 
     public PlayerDetailsResp(Long id, String name, String club, java.util.Date utilDob, String nationality, Integer height) {
-        Date dob = new Date(utilDob.getTime());
-
-        this.id = id;
-        this.name = name;
-        this.club = club == null ? "Free Agent" : club;
-        this.profile = new PlayerProfileResp(dob, nationality, height);
+        this(id, name, club, new Date(utilDob.getTime()), nationality, height);
     }
 
     public PlayerDetailsResp(Player player) {
