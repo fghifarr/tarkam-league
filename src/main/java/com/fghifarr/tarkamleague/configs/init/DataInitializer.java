@@ -29,6 +29,8 @@ public class DataInitializer {
     private ClubInitService clubInitService;
     @Autowired
     private PlayerInitService playerInitService;
+    @Autowired
+    private SeasonInitService seasonInitService;
 
     @PostConstruct
     public void init() {
@@ -40,5 +42,6 @@ public class DataInitializer {
         log.info("Successfully initialized " + userInitService.init() + " data for User");
         log.info("Successfully initialized " + clubInitService.init() + " data for Club");
         log.info("Successfully initialized " + playerInitService.init() + " data for Player");
+        log.info("Successfully initialized " + seasonInitService.init() + " data for Season");
     }
 }

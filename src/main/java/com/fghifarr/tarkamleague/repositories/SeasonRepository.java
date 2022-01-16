@@ -20,5 +20,4 @@ public interface SeasonRepository extends JpaRepository<Season, Long> {
             "FROM Season s WHERE s.id = ?1")
     SeasonResp findRespById(Long id);
 
-    Season findByName(String name);
 }

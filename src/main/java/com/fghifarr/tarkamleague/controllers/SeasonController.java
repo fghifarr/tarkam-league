@@ -3,6 +3,7 @@ package com.fghifarr.tarkamleague.controllers;
 import com.fghifarr.tarkamleague.configs.constants.RoleConstant;
 import com.fghifarr.tarkamleague.models.requests.SeasonListingCriteria;
 import com.fghifarr.tarkamleague.models.requests.SeasonReq;
+import com.fghifarr.tarkamleague.models.responses.SeasonDetailsResp;
 import com.fghifarr.tarkamleague.models.responses.SeasonResp;
 import com.fghifarr.tarkamleague.services.SeasonService;
 import com.fghifarr.tarkamleague.services.transactional.SeasonManagementService;
@@ -48,8 +49,8 @@ public class SeasonController extends BaseController {
 
     @GetMapping("/{id}")
     public @ResponseBody
-    SeasonResp get(@PathVariable Long id) {
-        SeasonResp season = seasonService.get(id);
+    SeasonDetailsResp get(@PathVariable Long id) {
+        SeasonDetailsResp season = seasonService.get(id);
         if (season == null)
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "There is no season with id: " + id);

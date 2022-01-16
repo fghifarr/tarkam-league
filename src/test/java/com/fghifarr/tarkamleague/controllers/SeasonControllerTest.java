@@ -1,11 +1,12 @@
 package com.fghifarr.tarkamleague.controllers;
 
 import com.fghifarr.tarkamleague.configs.constants.RoleConstant;
-import com.fghifarr.tarkamleague.entities.BaseEntity;
 import com.fghifarr.tarkamleague.entities.Club;
 import com.fghifarr.tarkamleague.entities.Season;
+import com.fghifarr.tarkamleague.entities.SeasonClub;
 import com.fghifarr.tarkamleague.models.requests.SeasonListingCriteria;
 import com.fghifarr.tarkamleague.models.requests.SeasonReq;
+import com.fghifarr.tarkamleague.models.responses.SeasonDetailsResp;
 import com.fghifarr.tarkamleague.models.responses.SeasonResp;
 import com.fghifarr.tarkamleague.services.SeasonService;
 import com.fghifarr.tarkamleague.services.transactional.SeasonManagementService;
@@ -22,8 +23,9 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,8 +46,8 @@ public class SeasonControllerTest extends BaseControllerTest {
     //========================
     //-----DATA GENERATOR-----
     //========================
-    Set<Club> createClubSet() {
-        return Set.of(
+    List<Club> createClubList() {
+        return List.of(
                 new Club(1L, "Liverpool"),
                 new Club(2L, "Manchester City"),
                 new Club(3L, "Manchester United"),
@@ -56,15 +58,26 @@ public class SeasonControllerTest extends BaseControllerTest {
     }
 
     List<Season> createSeasonList() {
-        Set<Club> clubList = createClubSet();
-
-        return List.of(
-                new Season("2021/22", clubList),
-                new Season("2020/21", clubList),
-                new Season("2019/20", clubList),
-                new Season("2018/19", clubList),
-                new Season("2017/18", clubList)
+        List<Club> clubList = new ArrayList<>(createClubList());
+        List<String> seasonNameList = List.of(
+                "2021/22", "2020/21", "2019/20", "2018/19", "2017/18"
         );
+        List<Season> seasonList = new ArrayList<>();
+
+        for (String seasonName : seasonNameList) {
+            Season season = new Season(seasonName);
+            Collections.shuffle(clubList);
+            for (Club club : clubList.subList(0, clubList.size() - 2)) {
+                SeasonClub seasonClub = new SeasonClub();
+                seasonClub.setSeason(season);
+                seasonClub.setClub(club);
+                club.getSeasons().add(seasonClub);
+                season.getClubs().add(seasonClub);
+                seasonList.add(season);
+            }
+        }
+
+        return seasonList;
     }
 
     Page<SeasonResp> createSeasonPage() {
@@ -77,9 +90,18 @@ public class SeasonControllerTest extends BaseControllerTest {
     }
 
     Season createSeason() {
-        Set<Club> clubList = createClubSet();
+        List<Club> clubList = createClubList();
+        Season season = new Season(1L, "2021/22");
 
-        return new Season(1L, "2021/22", clubList);
+        for (Club club : clubList.subList(0, clubList.size() - 2)) {
+            SeasonClub seasonClub = new SeasonClub();
+            seasonClub.setSeason(season);
+            seasonClub.setClub(club);
+            club.getSeasons().add(seasonClub);
+            season.getClubs().add(seasonClub);
+        }
+
+        return season;
     }
 
     //==============
@@ -146,7 +168,7 @@ public class SeasonControllerTest extends BaseControllerTest {
     public void get_success() throws Exception {
         Season season = createSeason();
 
-        when(seasonService.get(any(Long.class))).thenReturn(new SeasonResp(season));
+        when(seasonService.get(any(Long.class))).thenReturn(new SeasonDetailsResp(season));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/seasons/1"))
                 .andExpect(status().isOk())
@@ -177,7 +199,7 @@ public class SeasonControllerTest extends BaseControllerTest {
     public void create_byAdministrator_success() throws Exception {
         Season season = createSeason();
         SeasonReq seasonReq = new SeasonReq(season.getName(),
-                season.getClubs().stream().map(BaseEntity::getId).collect(Collectors.toSet()));
+                season.getClubs().stream().map(it -> it.getClub().getId()).collect(Collectors.toSet()));
         SeasonResp clubResp = new SeasonResp(season);
         String expectedMsg = "Successfully added new season: " + clubResp.getName();
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/seasons")
@@ -196,7 +218,7 @@ public class SeasonControllerTest extends BaseControllerTest {
     public void create_byCreator_success() throws Exception {
         Season season = createSeason();
         SeasonReq seasonReq = new SeasonReq(season.getName(),
-                season.getClubs().stream().map(BaseEntity::getId).collect(Collectors.toSet()));
+                season.getClubs().stream().map(it -> it.getClub().getId()).collect(Collectors.toSet()));
         SeasonResp clubResp = new SeasonResp(season);
         String expectedMsg = "Successfully added new season: " + clubResp.getName();
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/seasons")
@@ -215,7 +237,7 @@ public class SeasonControllerTest extends BaseControllerTest {
     public void create_forbidden() throws Exception {
         Season season = createSeason();
         SeasonReq seasonReq = new SeasonReq(season.getName(),
-                season.getClubs().stream().map(BaseEntity::getId).collect(Collectors.toSet()));
+                season.getClubs().stream().map(it -> it.getClub().getId()).collect(Collectors.toSet()));
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/seasons")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(seasonReq))
@@ -229,7 +251,7 @@ public class SeasonControllerTest extends BaseControllerTest {
     public void create_unauthorized() throws Exception {
         Season season = createSeason();
         SeasonReq seasonReq = new SeasonReq(season.getName(),
-                season.getClubs().stream().map(BaseEntity::getId).collect(Collectors.toSet()));
+                season.getClubs().stream().map(it -> it.getClub().getId()).collect(Collectors.toSet()));
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/seasons")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(seasonReq))
@@ -246,7 +268,7 @@ public class SeasonControllerTest extends BaseControllerTest {
     public void update_byAdministrator_success() throws Exception {
         Season season = createSeason();
         SeasonReq seasonReq = new SeasonReq(season.getName(),
-                season.getClubs().stream().map(BaseEntity::getId).collect(Collectors.toSet()));
+                season.getClubs().stream().map(it -> it.getClub().getId()).collect(Collectors.toSet()));
         SeasonResp clubResp = new SeasonResp(season);
         String expectedMsg = "Successfully updated season: " + clubResp.getName();
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/seasons/" + season.getId())
@@ -265,7 +287,7 @@ public class SeasonControllerTest extends BaseControllerTest {
     public void update_byEditor_success() throws Exception {
         Season season = createSeason();
         SeasonReq seasonReq = new SeasonReq(season.getName(),
-                season.getClubs().stream().map(BaseEntity::getId).collect(Collectors.toSet()));
+                season.getClubs().stream().map(it -> it.getClub().getId()).collect(Collectors.toSet()));
         SeasonResp clubResp = new SeasonResp(season);
         String expectedMsg = "Successfully updated season: " + clubResp.getName();
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/seasons/" + season.getId())
@@ -284,7 +306,7 @@ public class SeasonControllerTest extends BaseControllerTest {
     public void update_forbidden() throws Exception {
         Season season = createSeason();
         SeasonReq seasonReq = new SeasonReq(season.getName(),
-                season.getClubs().stream().map(BaseEntity::getId).collect(Collectors.toSet()));
+                season.getClubs().stream().map(it -> it.getClub().getId()).collect(Collectors.toSet()));
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/seasons/" + season.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(seasonReq))
@@ -298,7 +320,7 @@ public class SeasonControllerTest extends BaseControllerTest {
     public void update_unauthorized() throws Exception {
         Season season = createSeason();
         SeasonReq seasonReq = new SeasonReq(season.getName(),
-                season.getClubs().stream().map(BaseEntity::getId).collect(Collectors.toSet()));
+                season.getClubs().stream().map(it -> it.getClub().getId()).collect(Collectors.toSet()));
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/seasons/" + season.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(seasonReq))
@@ -312,7 +334,7 @@ public class SeasonControllerTest extends BaseControllerTest {
     public void update_notFound() throws Exception {
         Season season = createSeason();
         SeasonReq seasonReq = new SeasonReq(season.getName(),
-                season.getClubs().stream().map(BaseEntity::getId).collect(Collectors.toSet()));
+                season.getClubs().stream().map(it -> it.getClub().getId()).collect(Collectors.toSet()));
         String reason = "There is no season with id: " + season.getId();
         String expectedMsg = HttpStatus.NOT_FOUND + " \"" + reason + "\"";
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/seasons/" + season.getId())

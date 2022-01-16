@@ -23,18 +23,17 @@ public class Season extends BaseEntity {
     @NotBlank(message = "Name cannot be blank!")
     private String name;
 
-    @ManyToMany
-    @JoinTable(
-            name = "season_club",
-            joinColumns = @JoinColumn(name = "season_id"),
-            inverseJoinColumns = @JoinColumn(name = "club_id")
-    )
+    @OneToMany(mappedBy = "season")
     @NotNull(message = "Clubs cannot be null!")
     @Size(min = 3, max = 25, message = "Total clubs must be between 3 and 25!")
-    private Set<Club> clubs = new HashSet<>();
+    private Set<SeasonClub> clubs = new HashSet<>();
 
-    public Season(Long id, String name, Set<Club> clubs) {
-        this(name, clubs);
+    public Season(String name) {
+        this.name = name;
+    }
+
+    public Season(Long id, String name) {
+        this(name);
         this.setId(id);
     }
 }

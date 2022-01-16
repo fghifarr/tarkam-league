@@ -2,6 +2,7 @@ package com.fghifarr.tarkamleague.repositories;
 
 import com.fghifarr.tarkamleague.entities.Club;
 import com.fghifarr.tarkamleague.entities.Season;
+import com.fghifarr.tarkamleague.entities.SeasonClub;
 import com.fghifarr.tarkamleague.models.requests.SeasonListingCriteria;
 import com.fghifarr.tarkamleague.models.responses.SeasonResp;
 import org.junit.jupiter.api.AfterEach;
@@ -15,10 +16,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -32,6 +30,8 @@ public class SeasonRepositoryTest {
     private ClubRepository clubRepository;
     @Autowired
     private SeasonRepository seasonRepository;
+    @Autowired
+    private SeasonClubRepository seasonClubRepository;
 
     //========================
     //-----DATA GENERATOR-----
@@ -41,29 +41,52 @@ public class SeasonRepositoryTest {
 
     @BeforeEach
     void initData() {
+        initClubData();
+        initSeasonData();
+    }
+
+    void initClubData() {
         clubRepository.saveAllAndFlush(Set.of(
-                new Club(1L, "Liverpool"),
-                new Club(2L, "Manchester City"),
-                new Club(3L, "Manchester United"),
-                new Club(4L, "Newcastle United"),
-                new Club(5L, "West Ham United"),
-                new Club(6L, "Leicester City")
+                new Club("Liverpool"),
+                new Club("Manchester City"),
+                new Club("Manchester United"),
+                new Club("Newcastle United"),
+                new Club("West Ham United"),
+                new Club("Leicester City")
         ));
         clubList = clubRepository.findAll();
+    }
 
-        seasonRepository.saveAllAndFlush(List.of(
-                new Season("2021/22", new HashSet<>(clubList)),
-                new Season("2020/21", new HashSet<>(clubList)),
-                new Season("2019/20", new HashSet<>(clubList)),
-                new Season("2018/19", new HashSet<>(clubList)),
-                new Season("2017/18", new HashSet<>(clubList))
-        ));
+    void initSeasonData() {
+        List<String> seasonNameList = List.of(
+                "2021/22", "2020/21", "2019/20", "2018/19", "2017/18"
+        );
+
+        for (String seasonName : seasonNameList) {
+            Season season = new Season(seasonName);
+            Collections.shuffle(clubList);
+            List<SeasonClub> seasonClubList = new ArrayList<>();
+            for (Club club : clubList.subList(0, clubList.size() - 2)) {
+                SeasonClub seasonClub = new SeasonClub();
+                seasonClub.setSeason(season);
+                seasonClub.setClub(club);
+                club.getSeasons().add(seasonClub);
+                season.getClubs().add(seasonClub);
+                seasonClubList.add(seasonClub);
+            }
+            seasonRepository.saveAndFlush(season);
+            seasonClubRepository.saveAllAndFlush(seasonClubList);
+        }
         seasonList = seasonRepository.findAll();
     }
 
     @AfterEach
     void deleteAll() {
+        seasonClubRepository.deleteAll();
         seasonRepository.deleteAll();
+        clubRepository.deleteAll();
+        clubList = new ArrayList<>();
+        seasonList = new ArrayList<>();
     }
 
     //==========================================
