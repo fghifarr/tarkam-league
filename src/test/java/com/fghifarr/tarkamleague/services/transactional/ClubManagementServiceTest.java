@@ -4,7 +4,6 @@ import com.fghifarr.tarkamleague.entities.Club;
 import com.fghifarr.tarkamleague.models.requests.ClubReq;
 import com.fghifarr.tarkamleague.models.responses.ClubResp;
 import com.fghifarr.tarkamleague.repositories.ClubRepository;
-import com.fghifarr.tarkamleague.services.transactional.ClubManagementService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

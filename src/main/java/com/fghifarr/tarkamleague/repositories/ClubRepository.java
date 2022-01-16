@@ -11,9 +11,6 @@ import java.util.List;
 
 public interface ClubRepository extends JpaRepository<Club, Long> {
 
-    @Query(value = "SELECT * FROM Club WHERE name LIKE %?1%", nativeQuery = true)
-    List<Club> findAllRespByNameLike(String name);
-
     @Query(value = "SELECT " +
             "new com.fghifarr.tarkamleague.models.responses.ClubResp(c.id, c.name) " +
             "FROM Club c WHERE c.name LIKE %?1%")

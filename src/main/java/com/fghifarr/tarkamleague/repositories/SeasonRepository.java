@@ -1,7 +1,6 @@
 package com.fghifarr.tarkamleague.repositories;
 
 import com.fghifarr.tarkamleague.entities.Season;
-import com.fghifarr.tarkamleague.entities.Season;
 import com.fghifarr.tarkamleague.models.responses.SeasonResp;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

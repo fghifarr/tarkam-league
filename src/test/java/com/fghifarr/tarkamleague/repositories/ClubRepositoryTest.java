@@ -51,34 +51,6 @@ public class ClubRepositoryTest {
         clubRepository.deleteAll();
     }
 
-    //==========================
-    //-----FIND ALL BY NAME-----
-    //==========================
-    @Test
-    public void findAllByName_success() {
-        String query = "ster";
-        List<String> ans = clubList.stream()
-                .map(Club::getName)
-                .filter(name -> name.contains(query))
-                .collect(Collectors.toList());
-
-        List<Club> result = clubRepository.findAllRespByNameLike(query);
-
-        assertThat(result.size()).isEqualTo(ans.size());
-        for (Club club : result) {
-            assertThat(club.getName()).isIn(ans);
-        }
-    }
-
-    @Test
-    public void findAllByName_null() {
-        String query = "qwerty";
-
-        List<Club> result = clubRepository.findAllRespByNameLike(query);
-
-        assertThat(result.size()).isEqualTo(0);
-    }
-
     //==========================================
     //-----FIND ALL BY NAME WITH PAGINATION-----
     //==========================================
