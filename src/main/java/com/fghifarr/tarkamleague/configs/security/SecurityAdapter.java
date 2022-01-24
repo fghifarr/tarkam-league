@@ -73,6 +73,7 @@ public class SecurityAdapter extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/players/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/clubs/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/seasons/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/fixtures/**").permitAll()
                 .anyRequest().authenticated();
 
         http.addFilterBefore(
