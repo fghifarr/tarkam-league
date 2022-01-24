@@ -26,6 +26,10 @@ public class Club extends BaseEntity {
     @OneToMany(mappedBy = "club")
     private Set<SeasonClub> seasons = new HashSet<>();
 
+    //ToDO: moved into season club entity
+    @OneToMany(mappedBy = "club")
+    private Set<Player> players = new HashSet<>();
+
     public Club(String name) {
         this.name = name;
     }
