@@ -2,10 +2,14 @@ package com.fghifarr.tarkamleague.controllers;
 
 import com.fghifarr.tarkamleague.configs.constants.RoleConstant;
 import com.fghifarr.tarkamleague.entities.*;
+import com.fghifarr.tarkamleague.models.responses.PlannerSolutionResp;
 import com.fghifarr.tarkamleague.repositories.ClubRepository;
+import com.fghifarr.tarkamleague.repositories.MatchClubRepository;
 import com.fghifarr.tarkamleague.repositories.MatchRepository;
+import com.fghifarr.tarkamleague.services.PlannerService;
 import com.fghifarr.tarkamleague.services.UserService;
 import com.fghifarr.tarkamleague.utils.SeasonUtil;
+import org.optaplanner.core.api.solver.SolverStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,7 +30,41 @@ public class PlannerController {
     @Autowired
     private MatchRepository matchRepository;
     @Autowired
+    private MatchClubRepository matchClubRepository;
+    @Autowired
     private UserService userService;
+    @Autowired
+    private PlannerService plannerService;
+
+    @GetMapping("/solution")
+    public @ResponseBody
+    PlannerSolutionResp getPlannerSolution() {
+        return plannerService.getSolution();
+    }
+
+    @PreAuthorize(RoleConstant.HAS_ROLE_ADMINISTRATOR)
+    @PostMapping("/solve-and-listen")
+    public @ResponseBody
+    String solveAndListen() {
+        if (plannerService.getSolverStatus() == SolverStatus.SOLVING_ACTIVE)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Solver already running!");
+
+        plannerService.solveAndListen();
+        return "Start assigning clubs onto matches";
+    }
+
+    @PreAuthorize(RoleConstant.HAS_ROLE_ADMINISTRATOR)
+    @PostMapping("/stop-solving")
+    public @ResponseBody
+    String stopSolving() {
+        if (plannerService.getSolverStatus() != SolverStatus.SOLVING_ACTIVE)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Solver already stop running!");
+
+        plannerService.stopSolving();
+        return "Stop solving!";
+    }
 
     //This should be called whenever user created a new season or try to populate an empty season.
     //Will be implemented in the future updates.
@@ -61,6 +99,14 @@ public class PlannerController {
                 match.setCreatedBy(creator);
                 match.setModifiedBy(creator);
                 matchRepository.saveAndFlush(match);
+
+                MatchHost matchHost = new MatchHost();
+                MatchVisitor matchVisitor = new MatchVisitor();
+                matchClubRepository.save(matchHost);
+                matchClubRepository.save(matchVisitor);
+                match.setHost(matchHost);
+                match.setVisitor(matchVisitor);
+                matchRepository.saveAndFlush(match);
             }
         }
 
@@ -76,6 +122,7 @@ public class PlannerController {
                     "There's no data to be deleted!");
 
         matchRepository.deleteAll();
+        matchClubRepository.deleteAll();
 
         return "Successfully deleted all the matches!";
     }
