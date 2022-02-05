@@ -17,12 +17,14 @@ public class FixtureResp {
 
     private LocalDate date;
     private LocalTime time;
+    private int gameweek;
     private String host;
     private String visitor;
 
-    public FixtureResp(LocalDateTime dateTime, String host, String visitor) {
+    public FixtureResp(LocalDateTime dateTime, int gameweek, String host, String visitor) {
         this.date = dateTime.toLocalDate();
         this.time = dateTime.toLocalTime();
+        this.gameweek = gameweek;
         this.host = host;
         this.visitor = visitor;
     }

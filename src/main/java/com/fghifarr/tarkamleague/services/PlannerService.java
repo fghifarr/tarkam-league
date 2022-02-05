@@ -16,7 +16,6 @@ import org.optaplanner.core.api.solver.SolverStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -51,31 +50,31 @@ public class PlannerService {
     public PlannerSolutionResp getSolution() {
         PlannerSolution solution = buildPlannerSolution(PROBLEM_ID);
         PlannerSolutionResp resp = new PlannerSolutionResp();
-        Map<LocalDateTime, Map<Long, Map<MatchSide, String>>> fixturesPerGameweek = new HashMap<>();
+        Map<Integer, Map<Long, Map<MatchSide, String>>> fixturesPerGameweek = new HashMap<>();
 
         for (MatchClubPlanner matchClub : solution.getMatchClubList()) {
             fixturesPerGameweek
-                    .put(matchClub.getKickOff(), fixturesPerGameweek
-                            .getOrDefault(matchClub.getKickOff(), new HashMap<>()));
+                    .put(matchClub.getGameweek(), fixturesPerGameweek
+                            .getOrDefault(matchClub.getGameweek(), new HashMap<>()));
             fixturesPerGameweek
-                    .get(matchClub.getKickOff())
+                    .get(matchClub.getGameweek())
                     .put(matchClub.getMatchId(), fixturesPerGameweek
-                            .get(matchClub.getKickOff())
+                            .get(matchClub.getGameweek())
                             .getOrDefault(matchClub.getMatchId(), new HashMap<>()));
             fixturesPerGameweek
-                    .get(matchClub.getKickOff())
+                    .get(matchClub.getGameweek())
                     .get(matchClub.getMatchId())
                     .put(matchClub.getSide(), matchClub.getClubStr());
 
         }
-        for (Map.Entry<LocalDateTime, Map<Long, Map<MatchSide, String>>> entry : fixturesPerGameweek.entrySet()) {
-            LocalDateTime kickOff = entry.getKey();
+        for (Map.Entry<Integer, Map<Long, Map<MatchSide, String>>> entry : fixturesPerGameweek.entrySet()) {
+            Integer gameweek = entry.getKey();
             List<String> matchList = new ArrayList<>();
 
             for (Map<MatchSide, String> map : entry.getValue().values()) {
                 matchList.add(map.get(MatchSide.HOME) + " - " + map.get(MatchSide.AWAY));
             }
-            resp.getFixturesPerGameweek().put(kickOff, matchList);
+            resp.getFixturesPerGameweek().put(gameweek, matchList);
         }
         resp.setScore(solution.getScore());
 
@@ -102,6 +101,7 @@ public class PlannerService {
             MatchClubPlanner host = MatchClubPlanner.builder()
                     .id(match.getHostId())
                     .matchId(match.getId())
+                    .gameweek(match.getGameweek())
                     .kickOff(match.getKickOff())
                     .side(MatchSide.HOME)
                     .club(hostClubOpt.orElse(null))
@@ -111,6 +111,7 @@ public class PlannerService {
             MatchClubPlanner visitor = MatchClubPlanner.builder()
                     .id(match.getVisitorId())
                     .matchId(match.getId())
+                    .gameweek(match.getGameweek())
                     .kickOff(match.getKickOff())
                     .side(MatchSide.AWAY)
                     .club(visitorClubOpt.orElse(null))

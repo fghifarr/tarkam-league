@@ -13,7 +13,7 @@ import java.util.List;
 public interface MatchRepository extends JpaRepository<Match, Long> {
 
     @Query("SELECT " +
-            "new com.fghifarr.tarkamleague.models.responses.FixtureResp(m.kickOff, mhc.name, mvc.name) " +
+            "new com.fghifarr.tarkamleague.models.responses.FixtureResp(m.kickOff, m.gameweek, mhc.name, mvc.name) " +
             "FROM Match m " +
             "LEFT JOIN m.host mh " +
             "LEFT JOIN mh.club mhc " +
@@ -24,7 +24,7 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     @Query("SELECT " +
             "new com.fghifarr.tarkamleague.configs.planner.MatchPlanner(" +
-            "m.id, m.kickOff, mh.id, mhc.id, mhc.name, mv.id, mvc.id, mvc.name) " +
+            "m.id, m.gameweek, m.kickOff, mh.id, mhc.id, mhc.name, mv.id, mvc.id, mvc.name) " +
             "FROM Match m " +
             "LEFT JOIN m.host mh " +
             "LEFT JOIN mh.club mhc " +

@@ -21,6 +21,7 @@ public class MatchClubPlanner {
 
     private Long matchId;
 
+    private Integer gameweek;
     private LocalDateTime kickOff;
     private MatchSide side;
 

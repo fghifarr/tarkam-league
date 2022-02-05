@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,5 +17,5 @@ import java.util.Map;
 public class PlannerSolutionResp {
 
     private HardSoftScore score;
-    private Map<LocalDateTime, List<String>> fixturesPerGameweek = new HashMap<>();
+    private Map<Integer, List<String>> fixturesPerGameweek = new HashMap<>();
 }

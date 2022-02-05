@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MatchPlanner {
     private Long id;
+    private Integer gameweek;
     private LocalDateTime kickOff;
     private Long hostId;
     private Long hostClubId;

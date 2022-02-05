@@ -71,6 +71,7 @@ public class FixtureInitService {
 
         Match match = Match.builder()
                 .kickOff(kickOff)
+                .gameweek(gameweek)
                 .build();
         matchRepository.saveAndFlush(match);
 

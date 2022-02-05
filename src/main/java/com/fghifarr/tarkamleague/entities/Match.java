@@ -3,6 +3,7 @@ package com.fghifarr.tarkamleague.entities;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
@@ -22,6 +23,9 @@ public class Match extends BaseEntity {
     // Still manual, match based on date time
     // will be implemented in the future updates
     private boolean isFinished = false;
+    @NotNull(message = "Gameweek cannot be null!")
+    @Min(value = 0, message = "Gameweek must be bigger than 0!")
+    private Integer gameweek;
 
     // Will be added in the future
 //    @ManyToOne

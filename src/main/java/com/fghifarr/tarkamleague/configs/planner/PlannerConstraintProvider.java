@@ -11,19 +11,19 @@ public class PlannerConstraintProvider implements ConstraintProvider {
     @Override
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[] {
-                oneClubAtATimeRule(constraintFactory),
+                oneClubAtAGameweekRule(constraintFactory),
                 oneClubAtAMatchRule(constraintFactory)
         };
     }
 
-    private Constraint oneClubAtATimeRule(ConstraintFactory constraintFactory) {
+    private Constraint oneClubAtAGameweekRule(ConstraintFactory constraintFactory) {
         return constraintFactory
                 .forEach(MatchClubPlanner.class)
                 .join(MatchClubPlanner.class,
                         Joiners.equal(MatchClubPlanner::getClub),
-                        Joiners.equal(MatchClubPlanner::getKickOff)
+                        Joiners.equal(MatchClubPlanner::getGameweek)
                 ).filter((s1, s2) -> s1 != s2)
-                .penalize("Club can't play for more than one match at a time", HardSoftScore.ofHard(100));
+                .penalize("Club can't play for more than one match on a gameweek", HardSoftScore.ofHard(50));
     }
 
     private Constraint oneClubAtAMatchRule(ConstraintFactory constraintFactory) {

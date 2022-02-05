@@ -87,7 +87,7 @@ public class PlannerController {
         int totalGameweeks = SeasonUtil.countTotalGameweeks(totalParticipants);
         User creator = userService.getCurrentUser();
 
-        for (int gameweek = 0; gameweek <= totalGameweeks; gameweek++) {
+        for (int gameweek = 1; gameweek <= totalGameweeks; gameweek++) {
             LocalDate kickOffDate = LocalDate.now().plusDays(gameweek * 7L);
             LocalTime kickOffTime = LocalTime.of(19, 30, 0);
             LocalDateTime kickOff = LocalDateTime.of(kickOffDate, kickOffTime);
@@ -95,6 +95,7 @@ public class PlannerController {
             for (int i = 0; i < totalMatches/totalGameweeks; i++) {
                 Match match = Match.builder()
                         .kickOff(kickOff)
+                        .gameweek(gameweek)
                         .build();
                 match.setCreatedBy(creator);
                 match.setModifiedBy(creator);
