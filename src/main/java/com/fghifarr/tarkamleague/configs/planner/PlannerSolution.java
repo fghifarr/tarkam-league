@@ -33,7 +33,7 @@ public class PlannerSolution {
     private List<ClubPlanner> clubList = new ArrayList<>();
 
     @PlanningEntityCollectionProperty
-    private List<MatchClubPlanner> matchClubList = new ArrayList<>();
+    private List<MatchPlannerV2> matchList = new ArrayList<>();
 
     @PlanningScore
     private HardSoftScore score;

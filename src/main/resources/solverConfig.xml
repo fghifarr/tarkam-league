@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <solver>
     <solutionClass>com.fghifarr.tarkamleague.configs.planner.PlannerSolution</solutionClass>
-    <entityClass>com.fghifarr.tarkamleague.configs.planner.MatchClubPlanner</entityClass>
+    <entityClass>com.fghifarr.tarkamleague.configs.planner.MatchPlannerV2</entityClass>
 
     <scoreDirectorFactory>
         <constraintProviderClass>com.fghifarr.tarkamleague.configs.planner.PlannerConstraintProvider</constraintProviderClass>
     </scoreDirectorFactory>
-
-    <constructionHeuristic>
-        <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
-    </constructionHeuristic>
 
     <termination>
         <terminationCompositionStyle>OR</terminationCompositionStyle>

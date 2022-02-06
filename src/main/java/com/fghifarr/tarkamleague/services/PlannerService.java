@@ -1,12 +1,8 @@
 package com.fghifarr.tarkamleague.services;
 
-import com.fghifarr.tarkamleague.configs.constants.MatchSide;
-import com.fghifarr.tarkamleague.configs.planner.ClubPlanner;
-import com.fghifarr.tarkamleague.configs.planner.MatchClubPlanner;
-import com.fghifarr.tarkamleague.configs.planner.MatchPlanner;
-import com.fghifarr.tarkamleague.configs.planner.PlannerSolution;
+import com.fghifarr.tarkamleague.configs.planner.*;
 import com.fghifarr.tarkamleague.entities.Club;
-import com.fghifarr.tarkamleague.entities.MatchClub;
+import com.fghifarr.tarkamleague.entities.Match;
 import com.fghifarr.tarkamleague.models.responses.PlannerSolutionResp;
 import com.fghifarr.tarkamleague.repositories.*;
 import org.optaplanner.core.api.score.ScoreManager;
@@ -50,31 +46,12 @@ public class PlannerService {
     public PlannerSolutionResp getSolution() {
         PlannerSolution solution = buildPlannerSolution(PROBLEM_ID);
         PlannerSolutionResp resp = new PlannerSolutionResp();
-        Map<Integer, Map<Long, Map<MatchSide, String>>> fixturesPerGameweek = new HashMap<>();
 
-        for (MatchClubPlanner matchClub : solution.getMatchClubList()) {
-            fixturesPerGameweek
-                    .put(matchClub.getGameweek(), fixturesPerGameweek
-                            .getOrDefault(matchClub.getGameweek(), new HashMap<>()));
-            fixturesPerGameweek
-                    .get(matchClub.getGameweek())
-                    .put(matchClub.getMatchId(), fixturesPerGameweek
-                            .get(matchClub.getGameweek())
-                            .getOrDefault(matchClub.getMatchId(), new HashMap<>()));
-            fixturesPerGameweek
-                    .get(matchClub.getGameweek())
-                    .get(matchClub.getMatchId())
-                    .put(matchClub.getSide(), matchClub.getClubStr());
+        for (MatchPlannerV2 matchPlanner : solution.getMatchList()) {
+            if (!resp.getFixturesPerGameweek().containsKey(matchPlanner.getGameweek()))
+                resp.getFixturesPerGameweek().put(matchPlanner.getGameweek(), new ArrayList<>());
 
-        }
-        for (Map.Entry<Integer, Map<Long, Map<MatchSide, String>>> entry : fixturesPerGameweek.entrySet()) {
-            Integer gameweek = entry.getKey();
-            List<String> matchList = new ArrayList<>();
-
-            for (Map<MatchSide, String> map : entry.getValue().values()) {
-                matchList.add(map.get(MatchSide.HOME) + " - " + map.get(MatchSide.AWAY));
-            }
-            resp.getFixturesPerGameweek().put(gameweek, matchList);
+            resp.getFixturesPerGameweek().get(matchPlanner.getGameweek()).add(matchPlanner.toString());
         }
         resp.setScore(solution.getScore());
 
@@ -90,33 +67,22 @@ public class PlannerService {
         solution.getClubList().addAll(clubList);
 
         List<MatchPlanner> matchList = matchRepository.findAllMatchPlanners();
-        for (MatchPlanner match : matchList) {
+        for (MatchPlanner matchDto : matchList) {
             Optional<ClubPlanner> hostClubOpt = clubList.stream()
-                    .filter(it -> Objects.equals(it.getId(), match.getHostClubId()))
+                    .filter(it -> Objects.equals(it.getId(), matchDto.getHostClubId()))
                     .findFirst();
             Optional<ClubPlanner> visitorClubOpt = clubList.stream()
-                    .filter(it -> Objects.equals(it.getId(), match.getVisitorClubId()))
+                    .filter(it -> Objects.equals(it.getId(), matchDto.getVisitorClubId()))
                     .findFirst();
 
-            MatchClubPlanner host = MatchClubPlanner.builder()
-                    .id(match.getHostId())
-                    .matchId(match.getId())
-                    .gameweek(match.getGameweek())
-                    .kickOff(match.getKickOff())
-                    .side(MatchSide.HOME)
-                    .club(hostClubOpt.orElse(null))
+            MatchPlannerV2 match = MatchPlannerV2.builder()
+                    .id(matchDto.getId())
+                    .gameweek(matchDto.getGameweek())
+                    .kickOff(matchDto.getKickOff())
+                    .host(hostClubOpt.orElse(null))
+                    .visitor(visitorClubOpt.orElse(null))
                     .build();
-            solution.getMatchClubList().add(host);
-
-            MatchClubPlanner visitor = MatchClubPlanner.builder()
-                    .id(match.getVisitorId())
-                    .matchId(match.getId())
-                    .gameweek(match.getGameweek())
-                    .kickOff(match.getKickOff())
-                    .side(MatchSide.AWAY)
-                    .club(visitorClubOpt.orElse(null))
-                    .build();
-            solution.getMatchClubList().add(visitor);
+            solution.getMatchList().add(match);
         }
 
         scoreManager.updateScore(solution);
@@ -125,18 +91,24 @@ public class PlannerService {
     }
 
     private void updateFixtures(PlannerSolution plannerSolution) {
-        for (MatchClubPlanner matchClubPlanner : plannerSolution.getMatchClubList()) {
-            Optional<MatchClub> matchClubOpt = matchClubRepository.findById(matchClubPlanner.getId());
-            if (matchClubOpt.isEmpty()) return;
-            MatchClub matchClub = matchClubOpt.get();
+        for (MatchPlannerV2 matchPlanner : plannerSolution.getMatchList()) {
+            Optional<Match> matchOpt = matchRepository.findById(matchPlanner.getId());
+            if (matchOpt.isEmpty()) return;
+            Match match = matchOpt.get();
 
-            Optional<Club> clubOpt = Optional.empty();
-            if (matchClubPlanner.getClub() != null)
-                clubOpt = clubRepository.findById(matchClubPlanner.getClub().getId());
-            Club club = clubOpt.orElse(null);
+            Optional<Club> hostOpt = Optional.empty();
+            if (matchPlanner.getHost() != null)
+                hostOpt = clubRepository.findById(matchPlanner.getHostId());
+            Club host = hostOpt.orElse(null);
+            match.getHost().setClub(host);
+            matchClubRepository.save(match.getHost());
 
-            matchClub.setClub(club);
-            matchClubRepository.save(matchClub);
+            Optional<Club> visitorOpt = Optional.empty();
+            if (matchPlanner.getVisitor() != null)
+                visitorOpt = clubRepository.findById(matchPlanner.getVisitorId());
+            Club visitor = visitorOpt.orElse(null);
+            match.getVisitor().setClub(visitor);
+            matchClubRepository.save(match.getVisitor());
         }
     }
 }

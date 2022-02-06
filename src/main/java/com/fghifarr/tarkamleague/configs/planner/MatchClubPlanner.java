@@ -13,10 +13,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@PlanningEntity
+//@PlanningEntity
+@Deprecated
 public class MatchClubPlanner {
 
-    @PlanningId
+//    @PlanningId
     private Long id;
 
     private Long matchId;
@@ -25,7 +26,7 @@ public class MatchClubPlanner {
     private LocalDateTime kickOff;
     private MatchSide side;
 
-    @PlanningVariable(valueRangeProviderRefs = "clubRange")
+//    @PlanningVariable(valueRangeProviderRefs = "clubRange")
     private ClubPlanner club;
 
     public String getClubStr() {
