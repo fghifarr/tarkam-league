@@ -4,6 +4,8 @@ import com.fghifarr.tarkamleague.entities.Club;
 import com.fghifarr.tarkamleague.models.requests.ClubReq;
 import com.fghifarr.tarkamleague.models.responses.ClubResp;
 import com.fghifarr.tarkamleague.repositories.ClubRepository;
+import com.fghifarr.tarkamleague.repositories.PlayerRepository;
+import com.fghifarr.tarkamleague.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,11 +22,15 @@ import static org.mockito.Mockito.when;
 public class ClubManagementServiceTest {
     @Mock
     ClubRepository clubRepository;
+    @Mock
+    PlayerRepository playerRepository;
+    @Mock
+    UserService userService;
 
     ClubManagementService clubManagementService;
     @BeforeEach
     void injectDependencies() {
-        clubManagementService = new ClubManagementService(clubRepository);
+        clubManagementService = new ClubManagementService(clubRepository, playerRepository, userService);
     }
 
     //============
